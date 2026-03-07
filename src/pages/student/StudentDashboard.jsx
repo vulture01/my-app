@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { supabase } from '../supabaseClient'; // adjust path if needed
+import { supabase } from '../../supabaseClient'; // adjust path if needed
 import './StudentDashboard.css';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
