@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Login from './pages/Login'
 import StudentDashboard from './pages/student/StudentDashboard'
 import TeacherDashboard from './pages/teacher/TeacherDashboard'
-import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 export default function App() {
   return (
