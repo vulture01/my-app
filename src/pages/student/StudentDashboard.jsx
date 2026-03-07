@@ -1,8 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
-import { supabase } from '../../supabaseClient'; // adjust path if needed
+import { supabase } from '../../supabaseClient';
 import './StudentDashboard.css';
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -12,16 +10,16 @@ function getAttClass(pct) {
   return 'danger';
 }
 
-function getGrade(marks, maxMarks) {
-  const pct = (marks / maxMarks) * 100;
+function getGrade(score, maxScore) {
+  const pct = (score / maxScore) * 100;
   if (pct >= 90) return 'S';
   if (pct >= 75) return 'A';
   if (pct >= 60) return 'B';
   return 'C';
 }
 
-function getMarkColor(marks, maxMarks) {
-  const pct = (marks / maxMarks) * 100;
+function getMarkColor(score, maxScore) {
+  const pct = (score / maxScore) * 100;
   if (pct >= 90) return 'var(--accent-2)';
   if (pct >= 75) return 'var(--accent)';
   if (pct >= 60) return 'var(--accent-warn)';
@@ -43,7 +41,6 @@ function buildAISummary(attendance, marks) {
   const positives = [];
   const tags = [];
 
-  // Attendance analysis
   if (attendance.length > 0) {
     const lowAtt = attendance.filter(a => a.percentage < 75);
     const criticalAtt = attendance.filter(a => a.percentage < 60);
@@ -59,9 +56,8 @@ function buildAISummary(attendance, marks) {
     }
   }
 
-  // Marks analysis
   if (marks.length > 0) {
-    const avgPct = marks.reduce((sum, m) => sum + (m.marks / m.max_marks) * 100, 0) / marks.length;
+    const avgPct = marks.reduce((sum, m) => sum + (m.score / m.max_score) * 100, 0) / marks.length;
     if (avgPct >= 80) {
       positives.push(`strong average score of <strong>${avgPct.toFixed(0)}%</strong>`);
       tags.push({ label: '🎯 High Performer', type: 'tag-ok' });
@@ -82,84 +78,96 @@ function buildAISummary(attendance, marks) {
   return { summary, tags };
 }
 
-// ─── Component ─────────────────────────────────────────────────────────────────
-
 export default function StudentDashboard() {
   const [student, setStudent] = useState(null);
+  const [studentDetails, setStudentDetails] = useState(null);
   const [attendance, setAttendance] = useState([]);
   const [marks, setMarks] = useState([]);
   const [timetable, setTimetable] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [activeDay, setActiveDay] = useState(() => {
-    const day = new Date().getDay(); // 0=Sun
-    return day === 0 || day === 6 ? 0 : day - 1; // default to Mon if weekend
+    const day = new Date().getDay();
+    return day === 0 || day === 6 ? 0 : day - 1;
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ── Fetch all data on mount ──
   useEffect(() => {
     async function loadDashboard() {
       try {
         setLoading(true);
 
-        // 1. Get current user
         const { data: { user }, error: authErr } = await supabase.auth.getUser();
         if (authErr || !user) throw new Error('Session expired. Please log in again.');
 
-        // 2. Fetch student profile
-        // Table: profiles (id, full_name, roll_number, department, year, semester)
+        // Profile
         const { data: profile, error: profileErr } = await supabase
           .from('profiles')
-          .select('full_name, roll_number, department, year, semester')
+          .select('full_name, email, role')
           .eq('id', user.id)
           .single();
         if (profileErr) throw profileErr;
         setStudent(profile);
 
-        // 3. Fetch attendance summary
-        // Table: attendance (id, student_id, subject, present_classes, total_classes)
+        // Student details
+        const { data: stuData } = await supabase
+          .from('students')
+          .select('roll_number, year, section, department_id')
+          .eq('id', user.id)
+          .single();
+        setStudentDetails(stuData);
+
+        // Attendance grouped by subject
         const { data: attData, error: attErr } = await supabase
           .from('attendance')
-          .select('subject, present_classes, total_classes')
-          .eq('student_id', user.id)
-          .order('subject', { ascending: true });
+          .select('status, subject_id, subjects(name)')
+          .eq('student_id', user.id);
         if (attErr) throw attErr;
-        const attWithPct = (attData || []).map(a => ({
-          ...a,
-          percentage: a.total_classes > 0
-            ? Math.round((a.present_classes / a.total_classes) * 100)
-            : 0,
-        }));
-        setAttendance(attWithPct);
 
-        // 4. Fetch marks/grades
-        // Table: marks (id, student_id, subject, exam_type, marks, max_marks, recorded_at)
+        const attMap = {};
+        (attData || []).forEach(row => {
+          const name = row.subjects?.name || row.subject_id;
+          if (!attMap[name]) attMap[name] = { subject: name, present: 0, total: 0 };
+          attMap[name].total += 1;
+          if (row.status === 'present') attMap[name].present += 1;
+        });
+        setAttendance(Object.values(attMap).map(a => ({
+          subject: a.subject,
+          present_classes: a.present,
+          total_classes: a.total,
+          percentage: a.total > 0 ? Math.round((a.present / a.total) * 100) : 0,
+        })));
+
+        // Marks — uses score & max_score
         const { data: marksData, error: marksErr } = await supabase
           .from('marks')
-          .select('subject, exam_type, marks, max_marks, recorded_at')
+          .select('subject_id, subjects(name), exam_type, score, max_score')
           .eq('student_id', user.id)
-          .order('recorded_at', { ascending: false })
           .limit(10);
         if (marksErr) throw marksErr;
-        setMarks(marksData || []);
+        setMarks((marksData || []).map(m => ({
+          ...m,
+          subject: m.subjects?.name || m.subject_id,
+        })));
 
-        // 5. Fetch timetable
-        // Table: timetable (id, day_of_week, period_number, subject, teacher_name, room, start_time, end_time)
+        // Timetable
         const { data: ttData, error: ttErr } = await supabase
           .from('timetable')
-          .select('day_of_week, period_number, subject, teacher_name, room, start_time, end_time')
-          .order('day_of_week', { ascending: true })
-          .order('period_number', { ascending: true });
+          .select('day, start_time, end_time, subjects(name)')
+          .order('day', { ascending: true })
+          ;
         if (ttErr) throw ttErr;
-        setTimetable(ttData || []);
+        setTimetable((ttData || []).map(t => ({
+          ...t,
+          subject: t.subjects?.name || '—',
+          teacher_name: t.subjects?.teacher_id || 'Faculty',
+        })));
 
-        // 6. Fetch announcements
-        // Table: announcements (id, title, body, posted_by, target_role, priority, created_at)
+        // Announcements
         const { data: annData, error: annErr } = await supabase
           .from('announcements')
-          .select('id, title, posted_by, priority, created_at')
-          .or('target_role.eq.student,target_role.eq.all')
+          .select('id, title, posted_by, created_at')
+          .or('role_target.eq.student,role_target.eq.all')
           .order('created_at', { ascending: false })
           .limit(8);
         if (annErr) throw annErr;
@@ -172,34 +180,26 @@ export default function StudentDashboard() {
         setLoading(false);
       }
     }
-
     loadDashboard();
   }, []);
 
-  // ── Derived stats ──
   const overallAttendance = useMemo(() => {
     if (!attendance.length) return null;
-    const avg = attendance.reduce((s, a) => s + a.percentage, 0) / attendance.length;
-    return Math.round(avg);
+    return Math.round(attendance.reduce((s, a) => s + a.percentage, 0) / attendance.length);
   }, [attendance]);
 
   const avgScore = useMemo(() => {
     if (!marks.length) return null;
-    const avg = marks.reduce((s, m) => s + (m.marks / m.max_marks) * 100, 0) / marks.length;
-    return Math.round(avg);
+    return Math.round(marks.reduce((s, m) => s + (m.score / m.max_score) * 100, 0) / marks.length);
   }, [marks]);
 
   const todaySlots = useMemo(
-    () => timetable.filter(s => s.day_of_week === activeDay + 1), // assuming 1=Mon
+    () => timetable.filter(s => s.day === activeDay + 1),
     [timetable, activeDay]
   );
 
-  const aiInsight = useMemo(
-    () => buildAISummary(attendance, marks),
-    [attendance, marks]
-  );
+  const aiInsight = useMemo(() => buildAISummary(attendance, marks), [attendance, marks]);
 
-  // ── Loading state ──
   if (loading) {
     return (
       <div className="dash-loading">
@@ -209,11 +209,9 @@ export default function StudentDashboard() {
     );
   }
 
-  // ── Render ──
   return (
     <div className="edu-dashboard">
 
-      {/* ─ Header ─ */}
       <header className="dash-header">
         <div className="dash-header-left">
           <h1>Edu<span>Sync</span></h1>
@@ -221,15 +219,13 @@ export default function StudentDashboard() {
         </div>
         <div className="dash-meta">
           <div className="badge">Student</div>
-          <div>{student?.roll_number}</div>
-          <div>{student?.department} · Year {student?.year} · Sem {student?.semester}</div>
+          <div>{studentDetails?.roll_number || student?.email}</div>
+          <div>{studentDetails ? `Year ${studentDetails.year} · Sec ${studentDetails.section}` : ''}</div>
         </div>
       </header>
 
-      {/* ─ Error banner ─ */}
       {error && <div className="dash-error">⚠ {error}</div>}
 
-      {/* ─ Stats Row ─ */}
       <div className="stats-row">
         <div className="stat-card">
           <span className="stat-icon">📅</span>
@@ -239,7 +235,6 @@ export default function StudentDashboard() {
           </div>
           <div className="stat-sub">{attendance.length} subjects tracked</div>
         </div>
-
         <div className="stat-card">
           <span className="stat-icon">📊</span>
           <div className="stat-label">Average Score</div>
@@ -248,32 +243,22 @@ export default function StudentDashboard() {
           </div>
           <div className="stat-sub">{marks.length} assessments</div>
         </div>
-
         <div className="stat-card">
           <span className="stat-icon">🗓</span>
           <div className="stat-label">Today's Classes</div>
-          <div className="stat-value" style={{ color: 'var(--accent)' }}>
-            {todaySlots.length}
-          </div>
+          <div className="stat-value" style={{ color: 'var(--accent)' }}>{todaySlots.length}</div>
           <div className="stat-sub">{DAYS[activeDay]}</div>
         </div>
-
         <div className="stat-card">
           <span className="stat-icon">📢</span>
           <div className="stat-label">Announcements</div>
-          <div className="stat-value" style={{ color: 'var(--accent)' }}>
-            {announcements.length}
-          </div>
-          <div className="stat-sub">
-            {announcements.filter(a => a.priority === 'high').length} high priority
-          </div>
+          <div className="stat-value" style={{ color: 'var(--accent)' }}>{announcements.length}</div>
+          <div className="stat-sub">{announcements.length} total</div>
         </div>
       </div>
 
-      {/* ─ Main Grid ─ */}
       <div className="dash-grid">
 
-        {/* Attendance Card */}
         <div className="card attendance-card">
           <div className="card-header">
             <h2 className="card-title"><span className="icon">📅</span> Attendance</h2>
@@ -290,10 +275,7 @@ export default function StudentDashboard() {
                     <div className="att-subject" title={a.subject}>{a.subject}</div>
                     <div className={`att-pct ${cls}`}>{a.percentage}%</div>
                     <div className="att-bar-track">
-                      <div
-                        className={`att-bar-fill ${cls}`}
-                        style={{ width: `${a.percentage}%` }}
-                      />
+                      <div className={`att-bar-fill ${cls}`} style={{ width: `${a.percentage}%` }} />
                     </div>
                   </div>
                 );
@@ -302,7 +284,6 @@ export default function StudentDashboard() {
           )}
         </div>
 
-        {/* Marks Card */}
         <div className="card marks-card">
           <div className="card-header">
             <h2 className="card-title"><span className="icon">📊</span> Marks</h2>
@@ -313,8 +294,8 @@ export default function StudentDashboard() {
           ) : (
             <div className="marks-list">
               {marks.map((m, i) => {
-                const grade = getGrade(m.marks, m.max_marks);
-                const color = getMarkColor(m.marks, m.max_marks);
+                const grade = getGrade(m.score, m.max_score);
+                const color = getMarkColor(m.score, m.max_score);
                 return (
                   <div className="mark-row" key={i}>
                     <div className="mark-left">
@@ -323,7 +304,7 @@ export default function StudentDashboard() {
                     </div>
                     <div className="mark-score-wrap">
                       <div className="mark-score" style={{ color }}>
-                        {m.marks}<span style={{ color: 'var(--text-muted)', fontSize: 11 }}>/{m.max_marks}</span>
+                        {m.score}<span style={{ color: 'var(--text-muted)', fontSize: 11 }}>/{m.max_score}</span>
                       </div>
                       <span className={`mark-grade-pill grade-${grade}`}>{grade}</span>
                     </div>
@@ -334,7 +315,6 @@ export default function StudentDashboard() {
           )}
         </div>
 
-        {/* Timetable Card */}
         <div className="card timetable-card">
           <div className="card-header">
             <h2 className="card-title"><span className="icon">🗓</span> Timetable</h2>
@@ -357,22 +337,17 @@ export default function StudentDashboard() {
             <div className="timetable-slots">
               {todaySlots.map((slot, i) => (
                 <div className={`slot-card color-${i % 6}`} key={i}>
-                  <div className="slot-time">
-                    {slot.start_time} – {slot.end_time}
-                  </div>
+                  <div className="slot-time">{slot.start_time} – {slot.end_time}</div>
                   <div className="slot-subject">{slot.subject}</div>
                   <div className="slot-teacher">{slot.teacher_name}</div>
-                  <div className="slot-room">{slot.room}</div>
+                  <div className="slot-room"></div>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Right column: Announcements + AI Card */}
         <div className="right-col">
-
-          {/* Announcements */}
           <div className="card announcements-card">
             <div className="card-header">
               <h2 className="card-title"><span className="icon">📢</span> Announcements</h2>
@@ -382,10 +357,7 @@ export default function StudentDashboard() {
             ) : (
               <div className="ann-list">
                 {announcements.map((a) => (
-                  <div
-                    className={`ann-item priority-${a.priority || 'low'}`}
-                    key={a.id}
-                  >
+                  <div className="ann-item priority-low" key={a.id}>
                     <div className="ann-title">{a.title}</div>
                     <div className="ann-meta">
                       <span>{a.posted_by}</span>
@@ -397,7 +369,6 @@ export default function StudentDashboard() {
             )}
           </div>
 
-          {/* AI Status Card */}
           <div className="card ai-card">
             <div className="card-header">
               <h2 className="card-title"><span className="icon">🤖</span> AI Status</h2>
@@ -406,18 +377,15 @@ export default function StudentDashboard() {
               <div className="ai-dot" />
               <span className="ai-status-text">Analysis Ready</span>
             </div>
-            <p
-              className="ai-summary"
-              dangerouslySetInnerHTML={{ __html: aiInsight.summary }}
-            />
+            <p className="ai-summary" dangerouslySetInnerHTML={{ __html: aiInsight.summary }} />
             <div className="ai-tags">
               {aiInsight.tags.map((t, i) => (
                 <span className={`ai-tag ${t.type}`} key={i}>{t.label}</span>
               ))}
             </div>
           </div>
-
         </div>
+
       </div>
     </div>
   );
