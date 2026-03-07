@@ -112,7 +112,7 @@ export default function StudentDashboard() {
         // Student details
         const { data: stuData } = await supabase
           .from('students')
-          .select('roll_number, year, section, department_id')
+          .select('roll_number, year, section, department_id, departments(name)')
           .eq('id', user.id)
           .single();
         setStudentDetails(stuData);
@@ -194,7 +194,7 @@ export default function StudentDashboard() {
   }, [marks]);
 
   const todaySlots = useMemo(
-    () => timetable.filter(s => s.day === activeDay + 1),
+    () => timetable.filter(s => s.day === ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][activeDay]),
     [timetable, activeDay]
   );
 
@@ -220,7 +220,7 @@ export default function StudentDashboard() {
         <div className="dash-meta">
           <div className="badge">Student</div>
           <div>{studentDetails?.roll_number || student?.email}</div>
-          <div>{studentDetails ? `Year ${studentDetails.year} · Sec ${studentDetails.section}` : ''}</div>
+          <div>{studentDetails ? `${studentDetails.departments?.name || ''} · Year ${studentDetails.year} · Sec ${studentDetails.section}` : ''}</div>
         </div>
       </header>
 
