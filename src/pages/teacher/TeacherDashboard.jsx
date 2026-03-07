@@ -86,25 +86,13 @@ export default function TeacherDashboard() {
   }
 
   async function getStudentIdsForSubjects(subIds) {
-    const { data } = await supabase
-      .from('attendance')
-      .select('student_id')
-      .in('subject_id', subIds);
-    const ids = [...new Set((data || []).map(r => r.student_id))];
-    if (!ids.length) {
-      // fallback: get all students in same dept/year
-      const sub = subjects[0];
-      if (sub) {
-        const { data: allStudents } = await supabase
-          .from('students')
-          .select('id')
-          .eq('year', sub.year)
-          .eq('section', sub.section);
-        return (allStudents || []).map(s => s.id);
-      }
-    }
-    return ids;
-  }
+  const { data } = await supabase
+    .from('students')
+    .select('id')
+    .eq('year', 2)
+    .eq('section', 'A');
+  return (data || []).map(s => s.id);
+  } 
 
   async function saveAttendance() {
     if (!selectedSubject) return;
