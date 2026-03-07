@@ -45,7 +45,7 @@ export default function AdminDashboard() {
         supabase.from('students').select('id, roll_number, year, section, profiles(full_name, email), departments(name)'),
         supabase.from('teachers').select('id, employee_code, departments(name), profiles(full_name, email)'),
         supabase.from('departments').select('id, name, created_at'),
-        supabase.from('subjects').select('id, name, year, section, departments(name), profiles:teacher_id(full_name)'),
+        supabase.from('subjects').select('id, name, year, section, departments(name)'),
         supabase.from('announcements').select('id, title, body, posted_by, role_target, created_at').order('created_at', { ascending: false }),
       ]);
 
