@@ -220,7 +220,7 @@ export default function StudentDashboard() {
         <div className="dash-meta">
           <div className="badge">Student</div>
           <div>{studentDetails?.roll_number || student?.email}</div>
-          <div>{studentDetails ? `${studentDetails.departments?.name || ''} · Year ${studentDetails.year} · Sec ${studentDetails.section}` : ''}</div>
+          <div>{studentDetails ? `${studentDetails.departments?.name || 'CS Dept'} · Year ${studentDetails.year} · Sec ${studentDetails.section}` : ''}</div>
         </div>
       </header>
 
