@@ -14,6 +14,24 @@ export default function AdminDashboard() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
 
+  // Add student form
+  const [showAddStudent, setShowAddStudent] = useState(false);
+  const [newStudentName, setNewStudentName] = useState('');
+  const [newStudentEmail, setNewStudentEmail] = useState('');
+  const [newStudentRoll, setNewStudentRoll] = useState('');
+  const [newStudentYear, setNewStudentYear] = useState('1');
+  const [newStudentSection, setNewStudentSection] = useState('A');
+  const [newStudentDept, setNewStudentDept] = useState('');
+  const [studentMsg, setStudentMsg] = useState('');
+
+  // Add teacher form
+  const [showAddTeacher, setShowAddTeacher] = useState(false);
+  const [newTeacherName, setNewTeacherName] = useState('');
+  const [newTeacherEmail, setNewTeacherEmail] = useState('');
+  const [newTeacherEmpCode, setNewTeacherEmpCode] = useState('');
+  const [newTeacherDept, setNewTeacherDept] = useState('');
+  const [teacherMsg, setTeacherMsg] = useState('');
+
   // Announcement form
   const [annTitle, setAnnTitle] = useState('');
   const [annBody, setAnnBody] = useState('');
@@ -83,6 +101,68 @@ export default function AdminDashboard() {
     setAnnouncements(a => a.filter(x => x.id !== id));
   }
 
+  async function addStudent() {
+    if (!newStudentName.trim() || !newStudentRoll.trim() || !newStudentDept) return;
+    setStudentMsg('');
+    try {
+      const newId = crypto.randomUUID();
+      const { error: e1 } = await supabase.from('profiles').insert({
+        id: newId, full_name: newStudentName.trim(),
+        email: newStudentEmail.trim() || `${newStudentRoll.toLowerCase()}@edusync.com`,
+        role: 'student'
+      });
+      if (e1) throw e1;
+      const { error: e2 } = await supabase.from('students').insert({
+        id: newId, department_id: newStudentDept,
+        year: parseInt(newStudentYear), section: newStudentSection,
+        roll_number: newStudentRoll.trim()
+      });
+      if (e2) throw e2;
+      setStudentMsg('✅ Student added!');
+      setNewStudentName(''); setNewStudentEmail(''); setNewStudentRoll('');
+      setNewStudentYear('1'); setNewStudentSection('A'); setNewStudentDept('');
+      setShowAddStudent(false);
+      fetchAll();
+    } catch(e) { setStudentMsg('❌ ' + e.message); }
+  }
+
+  async function deleteStudent(id) {
+    if (!window.confirm('Delete this student?')) return;
+    await supabase.from('students').delete().eq('id', id);
+    await supabase.from('profiles').delete().eq('id', id);
+    setStudents(s => s.filter(x => x.id !== id));
+  }
+
+  async function addTeacher() {
+    if (!newTeacherName.trim() || !newTeacherEmpCode.trim() || !newTeacherDept) return;
+    setTeacherMsg('');
+    try {
+      const newId = crypto.randomUUID();
+      const { error: e1 } = await supabase.from('profiles').insert({
+        id: newId, full_name: newTeacherName.trim(),
+        email: newTeacherEmail.trim() || `${newTeacherEmpCode.toLowerCase()}@edusync.com`,
+        role: 'teacher'
+      });
+      if (e1) throw e1;
+      const { error: e2 } = await supabase.from('teachers').insert({
+        id: newId, department_id: newTeacherDept,
+        employee_code: newTeacherEmpCode.trim()
+      });
+      if (e2) throw e2;
+      setTeacherMsg('✅ Teacher added!');
+      setNewTeacherName(''); setNewTeacherEmail(''); setNewTeacherEmpCode(''); setNewTeacherDept('');
+      setShowAddTeacher(false);
+      fetchAll();
+    } catch(e) { setTeacherMsg('❌ ' + e.message); }
+  }
+
+  async function deleteTeacher(id) {
+    if (!window.confirm('Delete this teacher?')) return;
+    await supabase.from('teachers').delete().eq('id', id);
+    await supabase.from('profiles').delete().eq('id', id);
+    setTeachers(t => t.filter(x => x.id !== id));
+  }
+
   async function createDepartment() {
     if (!deptName.trim()) return;
     setDeptSaving(true); setDeptMsg('');
@@ -113,19 +193,15 @@ export default function AdminDashboard() {
 
   return (
     <div className="ad-root">
-      {/* Header */}
       <header className="ad-header">
         <div className="ad-logo">Edu<span>Sync</span></div>
-        <div className="ad-header-center">
-          <span className="ad-role-badge">ADMIN</span>
-        </div>
+        <div className="ad-header-center"><span className="ad-role-badge">ADMIN</span></div>
         <div className="ad-header-right">
           <span className="ad-name">{profile?.full_name || 'Admin'}</span>
           <button className="ad-logout" onClick={() => supabase.auth.signOut()}>Logout</button>
         </div>
       </header>
 
-      {/* Stat Cards */}
       <div className="ad-stats">
         {[
           { icon: '🏫', val: stats.departments, label: 'DEPARTMENTS' },
@@ -141,7 +217,6 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Tab Nav */}
       <nav className="ad-tabs">
         {[
           { id: 'overview', label: '📊 Overview' },
@@ -157,10 +232,8 @@ export default function AdminDashboard() {
 
       <div className="ad-content">
 
-        {/* OVERVIEW TAB */}
         {activeTab === 'overview' && (
           <div className="ad-grid-2">
-            {/* Recent Announcements */}
             <div className="ad-panel">
               <div className="ad-panel-header">
                 <h2>Recent Announcements</h2>
@@ -182,8 +255,6 @@ export default function AdminDashboard() {
                 {announcements.length === 0 && <p className="ad-empty">No announcements yet.</p>}
               </div>
             </div>
-
-            {/* Subjects overview */}
             <div className="ad-panel">
               <div className="ad-panel-header">
                 <h2>Subjects</h2>
@@ -193,10 +264,7 @@ export default function AdminDashboard() {
                 {subjects.map(s => (
                   <div key={s.id} className="ad-subject-row">
                     <div className="ad-subject-name">{s.name}</div>
-                    <div className="ad-subject-meta">
-                      <span>Year {s.year} · Sec {s.section}</span>
-                      <span className="ad-muted">{s.profiles?.full_name || '—'}</span>
-                    </div>
+                    <div className="ad-subject-meta"><span>Year {s.year} · Sec {s.section}</span></div>
                   </div>
                 ))}
                 {subjects.length === 0 && <p className="ad-empty">No subjects.</p>}
@@ -205,18 +273,62 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* USERS TAB */}
         {activeTab === 'users' && (
           <div className="ad-grid-2">
-            {/* Students */}
             <div className="ad-panel">
               <div className="ad-panel-header">
                 <h2>Students</h2>
-                <span className="ad-badge">{students.length} total</span>
+                <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                  <span className="ad-badge">{students.length} total</span>
+                  <button style={{padding:'4px 14px',fontSize:12,background:'#e84040',color:'#fff',border:'none',borderRadius:6,cursor:'pointer'}} onClick={()=>setShowAddStudent(s=>!s)}>
+                    {showAddStudent ? '✕ Cancel' : '+ Add'}
+                  </button>
+                </div>
               </div>
+              {showAddStudent && (
+                <div className="ad-form" style={{marginBottom:12}}>
+                  <div className="ad-form-group">
+                    <label>Full Name *</label>
+                    <input placeholder="e.g. Arjun Kumar" value={newStudentName} onChange={e=>setNewStudentName(e.target.value)} />
+                  </div>
+                  <div className="ad-form-group">
+                    <label>Email</label>
+                    <input placeholder="auto-generated if empty" value={newStudentEmail} onChange={e=>setNewStudentEmail(e.target.value)} />
+                  </div>
+                  <div className="ad-form-group">
+                    <label>Roll Number *</label>
+                    <input placeholder="e.g. BCA2024007" value={newStudentRoll} onChange={e=>setNewStudentRoll(e.target.value)} />
+                  </div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8}}>
+                    <div className="ad-form-group">
+                      <label>Year</label>
+                      <select value={newStudentYear} onChange={e=>setNewStudentYear(e.target.value)}>
+                        {['1','2','3'].map(y=><option key={y}>{y}</option>)}
+                      </select>
+                    </div>
+                    <div className="ad-form-group">
+                      <label>Section</label>
+                      <select value={newStudentSection} onChange={e=>setNewStudentSection(e.target.value)}>
+                        {['A','B','C'].map(s=><option key={s}>{s}</option>)}
+                      </select>
+                    </div>
+                    <div className="ad-form-group">
+                      <label>Department *</label>
+                      <select value={newStudentDept} onChange={e=>setNewStudentDept(e.target.value)}>
+                        <option value="">Select</option>
+                        {departments.map(d=><option key={d.id} value={d.id}>{d.name}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="ad-form-footer">
+                    {studentMsg && <span className="ad-msg">{studentMsg}</span>}
+                    <button className="ad-btn-save" onClick={addStudent}>+ Add Student</button>
+                  </div>
+                </div>
+              )}
               <table className="ad-table">
                 <thead>
-                  <tr><th>Roll No</th><th>Name</th><th>Dept</th><th>Year</th></tr>
+                  <tr><th>Roll No</th><th>Name</th><th>Dept</th><th>Year</th><th></th></tr>
                 </thead>
                 <tbody>
                   {students.map(s => (
@@ -225,22 +337,56 @@ export default function AdminDashboard() {
                       <td>{s.profiles?.full_name || '—'}</td>
                       <td className="ad-muted">{s.departments?.name || '—'}</td>
                       <td>Y{s.year}-{s.section}</td>
+                      <td><button className="ad-btn-delete" onClick={()=>deleteStudent(s.id)}>🗑️</button></td>
                     </tr>
                   ))}
-                  {students.length === 0 && <tr><td colSpan={4} className="ad-empty">No students.</td></tr>}
+                  {students.length === 0 && <tr><td colSpan={5} className="ad-empty">No students.</td></tr>}
                 </tbody>
               </table>
             </div>
 
-            {/* Teachers */}
             <div className="ad-panel">
               <div className="ad-panel-header">
                 <h2>Teachers</h2>
-                <span className="ad-badge">{teachers.length} total</span>
+                <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                  <span className="ad-badge">{teachers.length} total</span>
+                  <button style={{padding:'4px 14px',fontSize:12,background:'#e84040',color:'#fff',border:'none',borderRadius:6,cursor:'pointer'}} onClick={()=>setShowAddTeacher(s=>!s)}>
+                    {showAddTeacher ? '✕ Cancel' : '+ Add'}
+                  </button>
+                </div>
               </div>
+              {showAddTeacher && (
+                <div className="ad-form" style={{marginBottom:12}}>
+                  <div className="ad-form-group">
+                    <label>Full Name *</label>
+                    <input placeholder="e.g. Dr. Ravi Kumar" value={newTeacherName} onChange={e=>setNewTeacherName(e.target.value)} />
+                  </div>
+                  <div className="ad-form-group">
+                    <label>Email</label>
+                    <input placeholder="auto-generated if empty" value={newTeacherEmail} onChange={e=>setNewTeacherEmail(e.target.value)} />
+                  </div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+                    <div className="ad-form-group">
+                      <label>Employee Code *</label>
+                      <input placeholder="e.g. TC004" value={newTeacherEmpCode} onChange={e=>setNewTeacherEmpCode(e.target.value)} />
+                    </div>
+                    <div className="ad-form-group">
+                      <label>Department *</label>
+                      <select value={newTeacherDept} onChange={e=>setNewTeacherDept(e.target.value)}>
+                        <option value="">Select</option>
+                        {departments.map(d=><option key={d.id} value={d.id}>{d.name}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="ad-form-footer">
+                    {teacherMsg && <span className="ad-msg">{teacherMsg}</span>}
+                    <button className="ad-btn-save" onClick={addTeacher}>+ Add Teacher</button>
+                  </div>
+                </div>
+              )}
               <table className="ad-table">
                 <thead>
-                  <tr><th>Emp Code</th><th>Name</th><th>Email</th><th>Dept</th></tr>
+                  <tr><th>Emp Code</th><th>Name</th><th>Email</th><th>Dept</th><th></th></tr>
                 </thead>
                 <tbody>
                   {teachers.map(t => (
@@ -249,16 +395,16 @@ export default function AdminDashboard() {
                       <td>{t.profiles?.full_name || '—'}</td>
                       <td className="ad-muted">{t.profiles?.email || '—'}</td>
                       <td className="ad-muted">{t.departments?.name || '—'}</td>
+                      <td><button className="ad-btn-delete" onClick={()=>deleteTeacher(t.id)}>🗑️</button></td>
                     </tr>
                   ))}
-                  {teachers.length === 0 && <tr><td colSpan={4} className="ad-empty">No teachers.</td></tr>}
+                  {teachers.length === 0 && <tr><td colSpan={5} className="ad-empty">No teachers.</td></tr>}
                 </tbody>
               </table>
             </div>
           </div>
         )}
 
-        {/* DEPARTMENTS TAB */}
         {activeTab === 'departments' && (
           <div className="ad-grid-2">
             <div className="ad-panel">
@@ -279,16 +425,12 @@ export default function AdminDashboard() {
                 {departments.length === 0 && <p className="ad-empty">No departments yet.</p>}
               </div>
             </div>
-
             <div className="ad-panel">
               <div className="ad-panel-header"><h2>Add Department</h2></div>
               <div className="ad-form">
                 <div className="ad-form-group">
                   <label>Department Name</label>
-                  <input
-                    type="text" placeholder="e.g. Information Technology"
-                    value={deptName} onChange={e => setDeptName(e.target.value)}
-                  />
+                  <input type="text" placeholder="e.g. Information Technology" value={deptName} onChange={e => setDeptName(e.target.value)} />
                 </div>
                 <div className="ad-form-footer">
                   {deptMsg && <span className="ad-msg">{deptMsg}</span>}
@@ -301,10 +443,8 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* ANNOUNCEMENTS TAB */}
         {activeTab === 'announcements' && (
           <div className="ad-grid-2">
-            {/* Create */}
             <div className="ad-panel">
               <div className="ad-panel-header"><h2>New Announcement</h2></div>
               <div className="ad-form">
@@ -332,8 +472,6 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
-
-            {/* List */}
             <div className="ad-panel">
               <div className="ad-panel-header">
                 <h2>All Announcements</h2>
