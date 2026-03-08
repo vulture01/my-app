@@ -166,7 +166,7 @@ export default function StudentDashboard() {
         // Announcements
         const { data: annData, error: annErr } = await supabase
           .from('announcements')
-          .select('id, title, posted_by, created_at')
+          .select('id, title, created_at, profiles:posted_by(full_name)')
           .or('role_target.eq.student,role_target.eq.all')
           .order('created_at', { ascending: false })
           .limit(8);
@@ -360,7 +360,7 @@ export default function StudentDashboard() {
                   <div className="ann-item priority-low" key={a.id}>
                     <div className="ann-title">{a.title}</div>
                     <div className="ann-meta">
-                      <span>{a.posted_by}</span>
+                      <span>{a.profiles?.full_name || 'Admin'}</span>
                       <span>{formatDate(a.created_at)}</span>
                     </div>
                   </div>
