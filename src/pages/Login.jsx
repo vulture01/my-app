@@ -51,12 +51,6 @@ export default function Login() {
           style={{ width: '100%', padding: '10px', backgroundColor: '#4f46e5', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px', marginBottom: '12px' }}>
           {loading ? 'Signing in...' : 'Sign In'}
         </button>
-        <p style={{ textAlign: 'center', color: '#999', fontSize: '12px', marginBottom: '8px' }}>--- Setup (remove after testing) ---</p>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button onClick={() => handleSignup('admin')} style={{ flex: 1, padding: '8px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Create Admin</button>
-          <button onClick={() => handleSignup('teacher')} style={{ flex: 1, padding: '8px', backgroundColor: '#f59e0b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Create Teacher</button>
-          <button onClick={() => handleSignup('student')} style={{ flex: 1, padding: '8px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Create Student</button>
-        </div>
       </div>
     </div>
   )
