@@ -137,12 +137,12 @@ function PayrollTab({ teacherId }) {
             { label: 'Net Pay', val: latest.net_pay, highlight: true },
           ].map(({ label, val, highlight }) => (
             <div key={label} style={{
-              background: highlight ? 'rgba(232,64,64,0.1)' : 'var(--card-bg, #1a1a2e)',
-              border: `1px solid ${highlight ? '#e84040' : '#2a2a3e'}`,
+              background: highlight ? 'rgba(232,64,64,0.1)' : 'var(--card-bg-2)',
+              border: `1px solid ${highlight ? '#e84040' : 'var(--border)'}`,
               borderRadius: 10, padding: '14px 16px'
             }}>
               <div style={{ color: 'var(--text-muted, #aaa)', fontSize: 11, marginBottom: 4 }}>{label}</div>
-              <div style={{ color: highlight ? '#e84040' : '#fff', fontWeight: 700, fontSize: 18 }}>
+              <div style={{ color: highlight ? '#e84040' : 'var(--text)', fontWeight: 700, fontSize: 18 }}>
                 Rs. {val?.toLocaleString('en-IN') ?? '—'}
               </div>
             </div>
