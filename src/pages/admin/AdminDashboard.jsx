@@ -313,13 +313,12 @@ export default function AdminDashboard() {
 
       <div className="ad-stats">
         {[
-          { icon: '🏫', val: stats.departments, label: 'DEPARTMENTS' },
-          { icon: '📚', val: stats.subjects, label: 'SUBJECTS' },
-          { icon: '👨‍🏫', val: stats.teachers, label: 'TEACHERS' },
-          { icon: '👥', val: stats.students, label: 'STUDENTS' },
+          { val: stats.departments, label: 'DEPARTMENTS' },
+          { val: stats.subjects, label: 'SUBJECTS' },
+          { val: stats.teachers, label: 'TEACHERS' },
+          { val: stats.students, label: 'STUDENTS' },
         ].map(s => (
           <div className="ad-stat-card" key={s.label}>
-            <span className="ad-stat-icon">{s.icon}</span>
             <div className="ad-stat-val">{s.val}</div>
             <div className="ad-stat-label">{s.label}</div>
           </div>
@@ -328,10 +327,15 @@ export default function AdminDashboard() {
 
       <nav className="ad-tabs">
         {[
-          { id: 'overview', label: '📊 Overview' },
-          { id: 'users', label: '👥 Users' },
-          { id: 'departments', label: '🏫 Departments' },
-          { id: 'announcements', label: '📢 Announcements' },
+          { id: 'overview', label: 'Overview' },
+          { id: 'users', label: 'Users' },
+          { id: 'departments', label: 'Departments' },
+          { id: 'announcements', label: 'Announcements' },
+          { id: 'leave', label: 'Leave' },
+          { id: 'payroll', label: 'Payroll' },
+          { id: 'fees', label: 'Fees' },
+          { id: 'timetable', label: 'Timetable' },
+          { id: 'halltickets', label: 'Hall Tickets' },
         ].map(t => (
           <button key={t.id} className={`ad-tab ${activeTab === t.id ? 'active' : ''}`} onClick={() => setActiveTab(t.id)}>
             {t.label}

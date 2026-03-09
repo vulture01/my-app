@@ -64,7 +64,7 @@ function AIChatBuddy({ teacherName }) {
         border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#fff',
         boxShadow: '0 4px 20px rgba(232,64,64,0.5)',
         display: 'flex', alignItems: 'center', justifyContent: 'center'
-      }}>{open ? 'X' : 'AI'}</button>
+      }}>{open ? '✕' : '🤖'}</button>
 
       {open && (
         <div style={{
@@ -75,7 +75,10 @@ function AIChatBuddy({ teacherName }) {
         }}>
           <div style={{ padding: '14px 16px', background: 'linear-gradient(135deg, #e84040, #ff6b35)', display: 'flex', alignItems: 'center', gap: 10 }}>
             <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 20 }}>🤖</span>
               <div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>AI Teaching Assistant</div>
+            </div>
               <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11 }}>Here to help you teach better</div>
             </div>
           </div>

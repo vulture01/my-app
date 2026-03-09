@@ -135,7 +135,7 @@ function AIChatBuddy({ studentName, department, year }) {
         boxShadow: '0 4px 20px rgba(232,64,64,0.5)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff'
       }}>
-        {open ? 'X' : 'AI'}
+        {open ? '✕' : '🤖'}
       </button>
 
       {open && (
@@ -147,7 +147,10 @@ function AIChatBuddy({ studentName, department, year }) {
         }}>
           <div style={{ padding: '14px 16px', background: 'linear-gradient(135deg, #e84040, #ff6b35)', display: 'flex', alignItems: 'center', gap: 10 }}>
             <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 20 }}>🤖</span>
               <div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>AI Study Buddy</div>
+            </div>
               <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11 }}>Always here to help</div>
             </div>
           </div>
