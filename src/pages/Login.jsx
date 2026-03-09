@@ -66,18 +66,19 @@ export default function Login() {
 
   const inputStyle = {
     width: '100%', padding: '10px', marginBottom: '12px',
-    borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box'
+    borderRadius: '4px', border: '1px solid var(--input-border)',
+    boxSizing: 'border-box', background: 'var(--input-bg)', color: 'var(--text)'
   }
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: 'var(--bg, #f0f2f5)' }}>
       <div style={{ position: 'fixed', top: 16, right: 16 }}><ThemeToggle /></div>
-      <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '8px', width: '360px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+      <div style={{ backgroundColor: 'var(--card-bg)', padding: '40px', borderRadius: '8px', width: '360px', boxShadow: 'var(--shadow)', border: '1px solid var(--border)' }}>
 
         {!showChangePw ? (
           <>
             <h1 style={{ textAlign: 'center', marginBottom: '8px' }}>EduSync</h1>
-            <p style={{ textAlign: 'center', color: '#666', marginBottom: '24px' }}>Sign in to your account</p>
+            <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: '24px' }}>Sign in to your account</p>
             {error && <p style={{ color: 'red', marginBottom: '12px', fontSize: 14 }}>{error}</p>}
             <input type="email" placeholder="Email" value={email}
               onChange={e => setEmail(e.target.value)} style={inputStyle} />

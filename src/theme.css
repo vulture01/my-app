@@ -152,3 +152,319 @@ input[type="number"], textarea {
   background: #ffffff;
   color: #1a1a2e;
 }
+[data-theme="light"] .td-att-row.present {
+  background: rgba(39,174,96,0.05);
+}
+[data-theme="light"] .td-att-row.absent {
+  background: rgba(231,76,60,0.05);
+}
+/* ── STUDENT PORTAL ── */
+[data-theme="light"] .edu-dashboard {
+  background: var(--bg);
+}
+
+[data-theme="light"] .dash-header {
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+[data-theme="light"] .stat-card {
+  background: var(--card-bg);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme="light"] .stat-label,
+[data-theme="light"] .stat-sub {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .card {
+  background: var(--card-bg);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .card-title,
+[data-theme="light"] .att-subject,
+[data-theme="light"] .mark-subject,
+[data-theme="light"] .slot-subject,
+[data-theme="light"] .ann-title {
+  color: var(--text);
+}
+
+[data-theme="light"] .ann-meta,
+[data-theme="light"] .mark-exam,
+[data-theme="light"] .slot-teacher,
+[data-theme="light"] .slot-time {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .att-row,
+[data-theme="light"] .mark-row {
+  border-color: var(--border);
+}
+
+[data-theme="light"] .att-bar-track {
+  background: var(--bg-2);
+}
+
+[data-theme="light"] .slot-card {
+  background: var(--card-bg-2);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .day-tab {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .day-tab.active {
+  background: #e84040;
+  color: #fff;
+}
+
+[data-theme="light"] .ann-item {
+  background: var(--card-bg-2);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .ai-card {
+  background: var(--card-bg);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .ai-summary {
+  color: var(--text);
+}
+
+[data-theme="light"] .dash-meta,
+[data-theme="light"] .dash-header-left p {
+  color: var(--text-muted);
+}
+
+/* ── TEACHER PORTAL ── */
+[data-theme="light"] .td-root {
+  background: var(--bg);
+}
+
+[data-theme="light"] .td-stat-card {
+  background: var(--card-bg);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .td-stat-label {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .td-panel {
+  background: var(--card-bg);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .td-panel h2,
+[data-theme="light"] .td-panel h3 {
+  color: var(--text);
+}
+
+[data-theme="light"] .td-tabs {
+  background: var(--card-bg);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .td-tab {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .td-tab.active {
+  color: #e84040;
+  border-color: #e84040;
+}
+
+[data-theme="light"] .td-table {
+  background: var(--card-bg);
+}
+
+[data-theme="light"] .td-table th {
+  background: var(--card-bg-2);
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .td-table td {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .td-att-row {
+  background: var(--card-bg);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme="light"] .td-att-name,
+[data-theme="light"] .td-att-roll {
+  color: var(--text);
+}
+
+[data-theme="light"] .td-marks-row {
+  background: var(--card-bg);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme="light"] .td-marks-header-row {
+  color: var(--text-muted);
+  border-color: var(--border);
+  background: var(--card-bg-2);
+}
+
+[data-theme="light"] .td-marks-input {
+  background: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--text);
+}
+
+[data-theme="light"] .td-control-group label {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .td-tt-slot {
+  background: var(--card-bg-2);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .td-tt-time {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .td-tt-subject {
+  color: var(--text);
+}
+
+[data-theme="light"] .td-day-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .td-day-btn.active {
+  background: #e84040;
+  color: #fff;
+}
+
+[data-theme="light"] .td-empty {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .td-muted {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .td-name,
+[data-theme="light"] .td-emp {
+  color: var(--text);
+}
+
+/* ── ADMIN PORTAL ── */
+[data-theme="light"] .ad-root {
+  background: var(--bg);
+}
+
+[data-theme="light"] .ad-stat-card {
+  background: var(--card-bg);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .ad-stat-label,
+[data-theme="light"] .ad-stat-icon {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .ad-panel {
+  background: var(--card-bg);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .ad-panel h2 {
+  color: var(--text);
+}
+
+[data-theme="light"] .ad-tabs {
+  background: var(--card-bg);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .ad-tab {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .ad-tab.active {
+  color: #e84040;
+  border-color: #e84040;
+}
+
+[data-theme="light"] .ad-table th {
+  background: var(--card-bg-2);
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .ad-table td {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .ad-form {
+  background: var(--card-bg-2);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .ad-form-group label {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .ad-dept-row {
+  background: var(--card-bg-2);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .ad-dept-name {
+  color: var(--text);
+}
+
+[data-theme="light"] .ad-ann-item {
+  background: var(--card-bg-2);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .ad-ann-item-title,
+[data-theme="light"] .ad-ann-item-body {
+  color: var(--text);
+}
+
+[data-theme="light"] .ad-muted {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .ad-subject-row {
+  background: var(--card-bg-2);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .ad-subject-name,
+[data-theme="light"] .ad-subject-meta {
+  color: var(--text);
+}
+
+[data-theme="light"] .ad-ann-preview-item {
+  border-color: var(--border);
+}
+
+[data-theme="light"] .ad-ann-title {
+  color: var(--text);
+}
+
+[data-theme="light"] .ad-name {
+  color: var(--text);
+}
