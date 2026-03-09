@@ -57,7 +57,7 @@ function buildAISummary(attendance, marks) {
   }
 
   if (marks.length > 0) {
-    const avgPct = marks.reduce((sum, m) => sum + (m.score / m.max_score) * 100, 0) / marks.length;
+    const avgPct = Math.min(100, marks.reduce((sum, m) => sum + (m.score / m.max_score) * 100, 0) / marks.length);
     if (avgPct >= 80) {
       positives.push(`strong average score of <strong>${avgPct.toFixed(0)}%</strong>`);
       tags.push({ label: '🎯 High Performer', type: 'tag-ok' });
