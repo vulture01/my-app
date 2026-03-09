@@ -186,3 +186,59 @@ option { background: var(--card-bg); color: var(--text); }
 .ad-subjects-list { background: var(--card-bg) !important; }
 .ad-muted { color: var(--text-muted) !important; }
 .ad-empty { color: var(--text-muted) !important; }
+/* ── HOVER FIX FOR ALL TABLES ── */
+[data-theme="light"] .td-table tr:hover td,
+[data-theme="light"] .ad-table tr:hover td {
+  color: var(--text) !important;
+  background: var(--card-bg-2) !important;
+}
+
+/* ── ROLL NUMBER FIX ── */
+[data-theme="light"] .td-roll,
+[data-theme="light"] .ad-roll {
+  color: #e84040 !important;
+  background: rgba(232,64,64,0.1) !important;
+}
+
+/* ── MARKS CARDS IN STUDENT PORTAL ── */
+[data-theme="light"] .mark-row {
+  background: var(--card-bg) !important;
+}
+[data-theme="light"] .marks-list .mark-row {
+  background: var(--card-bg-2) !important;
+}
+
+/* ── PAYROLL CARDS BASIC PAY FIX ── */
+[data-theme="light"] .td-panel div[style*="card-bg"] {
+  background: var(--card-bg) !important;
+  color: var(--text) !important;
+}
+
+/* ── ATTENDANCE ROLL TAG FIX ── */
+[data-theme="light"] .td-att-roll {
+  background: rgba(232,64,64,0.1) !important;
+  color: #e84040 !important;
+}
+
+/* ── STUDENT MARKS SUBJECT NAME ── */
+[data-theme="light"] .mark-subject,
+[data-theme="light"] .mark-score {
+  color: var(--text) !important;
+}
+
+/* ── FORCE ALL TEXT IN CARDS LIGHT ── */
+[data-theme="light"] .card *:not(.att-bar-fill):not(.grade-S):not(.grade-A):not(.grade-B):not(.grade-C):not(.mark-grade-pill):not(button):not(.badge) {
+  color: var(--text);
+}
+
+[data-theme="light"] .stat-value.good { color: #27ae60 !important; }
+[data-theme="light"] .stat-value.warn { color: #d97706 !important; }
+[data-theme="light"] .stat-value.danger { color: #e74c3c !important; }
+
+/* ── PAYROLL SUMMARY CARDS ── */
+[data-theme="light"] div[style*="1a1a2e"],
+[data-theme="light"] div[style*="card-bg"] {
+  background: var(--card-bg) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
