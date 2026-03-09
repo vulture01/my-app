@@ -1,4 +1,7 @@
-/* ── DARK THEME (default) ── */
+/* ═══════════════════════════════════════════
+   EDUSYNC — GLOBAL THEME VARIABLES
+═══════════════════════════════════════════ */
+
 :root, [data-theme="dark"] {
   --bg: #0d0d1a;
   --bg-2: #13132a;
@@ -18,7 +21,6 @@
   --shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
 
-/* ── LIGHT THEME ── */
 [data-theme="light"] {
   --bg: #f4f6fb;
   --bg-2: #eef0f7;
@@ -32,439 +34,155 @@
   --accent-warn: #d97706;
   --accent-3: #e74c3c;
   --toggle-bg: rgba(0,0,0,0.06);
-  --input-bg: #f4f6fb;
+  --input-bg: #ffffff;
   --input-border: #d1d5db;
   --header-bg: #ffffff;
   --shadow: 0 4px 24px rgba(0,0,0,0.08);
 }
 
-/* ── APPLY GLOBALLY ── */
+*, *::before, *::after { box-sizing: border-box; }
+
 body {
   background: var(--bg);
   color: var(--text);
   transition: background 0.2s, color 0.2s;
+  margin: 0;
 }
 
-/* Make all dashboards use theme variables */
-.edu-dashboard, .td-root, .ad-root {
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-}
-
-.dash-header, .td-header, .ad-header {
-  background: var(--header-bg);
-  border-bottom: 1px solid var(--border);
-}
-
-.card, .td-panel, .ad-panel, .stat-card, .td-stat-card, .ad-stat-card {
-  background: var(--card-bg);
-  border-color: var(--border);
-}
-
-.td-table th, .ad-table th {
-  background: var(--card-bg-2);
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
-}
-
-.td-table td, .ad-table td {
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
-}
-
-.td-table tr:hover, .ad-table tr:hover {
-  background: var(--card-bg-2);
-}
-
-select, input[type="text"], input[type="email"],
-input[type="password"], input[type="date"],
-input[type="number"], textarea {
+input, select, textarea {
   background: var(--input-bg) !important;
-  border-color: var(--input-border) !important;
+  border: 1px solid var(--input-border) !important;
   color: var(--text) !important;
-}
-
-.td-tabs, .ad-tabs {
-  background: var(--card-bg);
-  border-bottom: 1px solid var(--border);
-}
-
-.td-att-row, .td-marks-row {
-  background: var(--card-bg);
-  border-color: var(--border);
-}
-
-.ann-item, .ad-ann-item, .td-tt-slot {
-  background: var(--card-bg-2);
-  border-color: var(--border);
-}
-
-/* Login page light mode */
-[data-theme="light"] .login-box {
-  background: #ffffff;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
-}
-/* Fix hover and selected states in light mode */
-[data-theme="light"] .td-att-row,
-[data-theme="light"] .td-marks-row,
-[data-theme="light"] .ann-item,
-[data-theme="light"] .ad-ann-item,
-[data-theme="light"] .slot-card,
-[data-theme="light"] .td-tt-slot {
-  background: var(--card-bg-2);
-  color: var(--text);
-}
-
-[data-theme="light"] .td-tab,
-[data-theme="light"] .ad-tab,
-[data-theme="light"] .day-tab,
-[data-theme="light"] .td-day-btn {
-  color: var(--text-muted);
-  background: transparent;
-}
-
-[data-theme="light"] .td-tab.active,
-[data-theme="light"] .ad-tab.active {
-  color: #e84040;
-}
-
-[data-theme="light"] .td-toggle-btn,
-[data-theme="light"] .td-btn-sm {
-  background: var(--card-bg-2);
-  color: var(--text);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .mark-row,
-[data-theme="light"] .att-row {
-  border-color: var(--border);
-}
-
-[data-theme="light"] .ai-card,
-[data-theme="light"] .td-panel,
-[data-theme="light"] .ad-panel {
-  background: var(--card-bg);
-  border-color: var(--border);
-}
-
-[data-theme="light"] option {
-  background: #ffffff;
-  color: #1a1a2e;
-}
-[data-theme="light"] .td-att-row.present {
-  background: rgba(39,174,96,0.05);
-}
-[data-theme="light"] .td-att-row.absent {
-  background: rgba(231,76,60,0.05);
-}
-/* ── STUDENT PORTAL ── */
-[data-theme="light"] .edu-dashboard {
-  background: var(--bg);
-}
-
-[data-theme="light"] .dash-header {
-  background: var(--header-bg);
-  border-bottom: 1px solid var(--border);
-}
-
-[data-theme="light"] .stat-card {
-  background: var(--card-bg);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-[data-theme="light"] .stat-label,
-[data-theme="light"] .stat-sub {
-  color: var(--text-muted);
-}
-
-[data-theme="light"] .card {
-  background: var(--card-bg);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .card-title,
-[data-theme="light"] .att-subject,
-[data-theme="light"] .mark-subject,
-[data-theme="light"] .slot-subject,
-[data-theme="light"] .ann-title {
-  color: var(--text);
-}
-
-[data-theme="light"] .ann-meta,
-[data-theme="light"] .mark-exam,
-[data-theme="light"] .slot-teacher,
-[data-theme="light"] .slot-time {
-  color: var(--text-muted);
-}
-
-[data-theme="light"] .att-row,
-[data-theme="light"] .mark-row {
-  border-color: var(--border);
-}
-
-[data-theme="light"] .att-bar-track {
-  background: var(--bg-2);
-}
-
-[data-theme="light"] .slot-card {
-  background: var(--card-bg-2);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .day-tab {
-  background: transparent;
-  color: var(--text-muted);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .day-tab.active {
-  background: #e84040;
-  color: #fff;
-}
-
-[data-theme="light"] .ann-item {
-  background: var(--card-bg-2);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .ai-card {
-  background: var(--card-bg);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .ai-summary {
-  color: var(--text);
-}
-
-[data-theme="light"] .dash-meta,
-[data-theme="light"] .dash-header-left p {
-  color: var(--text-muted);
-}
-
-/* ── TEACHER PORTAL ── */
-[data-theme="light"] .td-root {
-  background: var(--bg);
-}
-
-[data-theme="light"] .td-stat-card {
-  background: var(--card-bg);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .td-stat-label {
-  color: var(--text-muted);
-}
-
-[data-theme="light"] .td-panel {
-  background: var(--card-bg);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .td-panel h2,
-[data-theme="light"] .td-panel h3 {
-  color: var(--text);
-}
-
-[data-theme="light"] .td-tabs {
-  background: var(--card-bg);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .td-tab {
-  color: var(--text-muted);
-}
-
-[data-theme="light"] .td-tab.active {
-  color: #e84040;
-  border-color: #e84040;
-}
-
-[data-theme="light"] .td-table {
-  background: var(--card-bg);
-}
-
-[data-theme="light"] .td-table th {
-  background: var(--card-bg-2);
-  color: var(--text-muted);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .td-table td {
-  color: var(--text);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .td-att-row {
-  background: var(--card-bg);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-[data-theme="light"] .td-att-name,
-[data-theme="light"] .td-att-roll {
-  color: var(--text);
-}
-
-[data-theme="light"] .td-marks-row {
-  background: var(--card-bg);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-[data-theme="light"] .td-marks-header-row {
-  color: var(--text-muted);
-  border-color: var(--border);
-  background: var(--card-bg-2);
-}
-
-[data-theme="light"] .td-marks-input {
-  background: var(--input-bg);
-  border-color: var(--input-border);
-  color: var(--text);
-}
-
-[data-theme="light"] .td-control-group label {
-  color: var(--text-muted);
-}
-
-[data-theme="light"] .td-tt-slot {
-  background: var(--card-bg-2);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .td-tt-time {
-  color: var(--text-muted);
-}
-
-[data-theme="light"] .td-tt-subject {
-  color: var(--text);
-}
-
-[data-theme="light"] .td-day-btn {
-  background: transparent;
-  color: var(--text-muted);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .td-day-btn.active {
-  background: #e84040;
-  color: #fff;
-}
-
-[data-theme="light"] .td-empty {
-  color: var(--text-muted);
-}
-
-[data-theme="light"] .td-muted {
-  color: var(--text-muted);
-}
-
-[data-theme="light"] .td-name,
-[data-theme="light"] .td-emp {
-  color: var(--text);
-}
-
-/* ── ADMIN PORTAL ── */
-[data-theme="light"] .ad-root {
-  background: var(--bg);
-}
-
-[data-theme="light"] .ad-stat-card {
-  background: var(--card-bg);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .ad-stat-label,
-[data-theme="light"] .ad-stat-icon {
-  color: var(--text-muted);
-}
-
-[data-theme="light"] .ad-panel {
-  background: var(--card-bg);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .ad-panel h2 {
-  color: var(--text);
-}
-
-[data-theme="light"] .ad-tabs {
-  background: var(--card-bg);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .ad-tab {
-  color: var(--text-muted);
-}
-
-[data-theme="light"] .ad-tab.active {
-  color: #e84040;
-  border-color: #e84040;
-}
-
-[data-theme="light"] .ad-table th {
-  background: var(--card-bg-2);
-  color: var(--text-muted);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .ad-table td {
-  color: var(--text);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .ad-form {
-  background: var(--card-bg-2);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .ad-form-group label {
-  color: var(--text-muted);
-}
-
-[data-theme="light"] .ad-dept-row {
-  background: var(--card-bg-2);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .ad-dept-name {
-  color: var(--text);
-}
-
-[data-theme="light"] .ad-ann-item {
-  background: var(--card-bg-2);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .ad-ann-item-title,
-[data-theme="light"] .ad-ann-item-body {
-  color: var(--text);
-}
-
-[data-theme="light"] .ad-muted {
-  color: var(--text-muted);
-}
-
-[data-theme="light"] .ad-subject-row {
-  background: var(--card-bg-2);
-  border-color: var(--border);
-}
-
-[data-theme="light"] .ad-subject-name,
-[data-theme="light"] .ad-subject-meta {
-  color: var(--text);
-}
-
-[data-theme="light"] .ad-ann-preview-item {
-  border-color: var(--border);
-}
-
-[data-theme="light"] .ad-ann-title {
-  color: var(--text);
-}
-
-[data-theme="light"] .ad-name {
-  color: var(--text);
-}
+  transition: background 0.2s, color 0.2s;
+}
+input::placeholder, textarea::placeholder { color: var(--text-muted) !important; }
+option { background: var(--card-bg); color: var(--text); }
+
+/* ═══════════════════════════════════════════
+   STUDENT PORTAL
+═══════════════════════════════════════════ */
+.edu-dashboard { background: var(--bg) !important; color: var(--text) !important; min-height: 100vh; }
+.dash-header { background: var(--header-bg) !important; border-bottom: 1px solid var(--border) !important; }
+.dash-header-left h1, .dash-header-left p { color: var(--text) !important; }
+.dash-meta > div { color: var(--text-muted) !important; }
+.stat-card { background: var(--card-bg) !important; border: 1px solid var(--border) !important; color: var(--text) !important; }
+.stat-label, .stat-sub { color: var(--text-muted) !important; }
+.stats-row { background: var(--bg) !important; }
+.dash-grid { background: var(--bg) !important; }
+.card { background: var(--card-bg) !important; border: 1px solid var(--border) !important; }
+.card-title { color: var(--text) !important; }
+.card-badge { background: var(--card-bg-2) !important; color: var(--text-muted) !important; }
+.att-subject { color: var(--text) !important; }
+.att-row { border-color: var(--border) !important; }
+.att-bar-track { background: var(--bg-2) !important; }
+.mark-subject { color: var(--text) !important; }
+.mark-exam { color: var(--text-muted) !important; }
+.mark-row { border-color: var(--border) !important; }
+.slot-card { background: var(--card-bg-2) !important; border-color: var(--border) !important; }
+.slot-subject { color: var(--text) !important; }
+.slot-teacher, .slot-time { color: var(--text-muted) !important; }
+.day-tab { background: transparent !important; color: var(--text-muted) !important; border-color: var(--border) !important; }
+.day-tab.active { background: #e84040 !important; color: #fff !important; }
+.days-tabs { background: var(--card-bg-2) !important; }
+.ann-item { background: var(--card-bg-2) !important; border-color: var(--border) !important; }
+.ann-title { color: var(--text) !important; }
+.ann-meta { color: var(--text-muted) !important; }
+.ai-card { background: var(--card-bg) !important; border-color: var(--border) !important; }
+.ai-summary { color: var(--text) !important; }
+.no-class { color: var(--text-muted) !important; }
+.right-col { background: var(--bg) !important; }
+
+/* ═══════════════════════════════════════════
+   TEACHER PORTAL
+═══════════════════════════════════════════ */
+.td-root { background: var(--bg) !important; color: var(--text) !important; min-height: 100vh; }
+.td-header { background: var(--header-bg) !important; border-bottom: 1px solid var(--border) !important; }
+.td-name { color: var(--text) !important; }
+.td-emp { color: var(--text-muted) !important; }
+.td-stat-card { background: var(--card-bg) !important; border: 1px solid var(--border) !important; color: var(--text) !important; }
+.td-stat-label { color: var(--text-muted) !important; }
+.td-stats { background: var(--bg) !important; }
+.td-tabs { background: var(--card-bg) !important; border-bottom: 1px solid var(--border) !important; }
+.td-tab { color: var(--text-muted) !important; background: transparent !important; }
+.td-tab.active { color: #e84040 !important; border-color: #e84040 !important; background: transparent !important; }
+.td-content { background: var(--bg) !important; }
+.td-panel { background: var(--card-bg) !important; border: 1px solid var(--border) !important; color: var(--text) !important; }
+.td-panel h2, .td-panel h3 { color: var(--text) !important; }
+.td-panel-header h2 { color: var(--text) !important; }
+.td-badge { background: var(--card-bg-2) !important; color: var(--text-muted) !important; }
+.td-table { background: var(--card-bg) !important; width: 100%; }
+.td-table th { background: var(--card-bg-2) !important; color: var(--text-muted) !important; border-bottom: 1px solid var(--border) !important; }
+.td-table td { color: var(--text) !important; border-bottom: 1px solid var(--border) !important; }
+.td-table tr:hover { background: var(--card-bg-2) !important; }
+.td-att-row { background: var(--card-bg) !important; border: 1px solid var(--border) !important; color: var(--text) !important; }
+.td-att-name, .td-att-roll { color: var(--text) !important; }
+.td-att-list { background: var(--card-bg) !important; }
+.td-att-actions { background: var(--card-bg-2) !important; border-color: var(--border) !important; }
+.td-att-summary { background: var(--card-bg-2) !important; }
+.td-controls { background: var(--card-bg-2) !important; border-color: var(--border) !important; }
+.td-control-group label { color: var(--text-muted) !important; }
+.td-toggle-btn { background: var(--card-bg-2) !important; color: var(--text) !important; border-color: var(--border) !important; }
+.td-toggle-btn.active-green { background: #27ae60 !important; color: #fff !important; }
+.td-toggle-btn.active-red { background: #e74c3c !important; color: #fff !important; }
+.td-btn-sm { background: var(--card-bg-2) !important; color: var(--text) !important; border: 1px solid var(--border) !important; }
+.td-btn-sm.td-btn-red { background: rgba(231,76,60,0.15) !important; color: #e74c3c !important; }
+.td-save-row { border-top: 1px solid var(--border) !important; background: var(--card-bg) !important; }
+.td-marks-list { background: var(--card-bg) !important; }
+.td-marks-header-row { background: var(--card-bg-2) !important; color: var(--text-muted) !important; border-color: var(--border) !important; }
+.td-marks-row { background: var(--card-bg) !important; border-color: var(--border) !important; color: var(--text) !important; }
+.td-marks-input { background: var(--input-bg) !important; border-color: var(--input-border) !important; color: var(--text) !important; }
+.td-tt-slot { background: var(--card-bg-2) !important; border-color: var(--border) !important; }
+.td-tt-time { color: var(--text-muted) !important; }
+.td-tt-subject { color: var(--text) !important; }
+.td-tt-list { background: var(--card-bg) !important; }
+.td-day-btn { background: transparent !important; color: var(--text-muted) !important; border-color: var(--border) !important; }
+.td-day-btn.active { background: #e84040 !important; color: #fff !important; }
+.td-day-tabs { background: var(--card-bg-2) !important; }
+.td-empty { color: var(--text-muted) !important; }
+.td-muted { color: var(--text-muted) !important; }
+
+/* ═══════════════════════════════════════════
+   ADMIN PORTAL
+═══════════════════════════════════════════ */
+.ad-root { background: var(--bg) !important; color: var(--text) !important; min-height: 100vh; }
+.ad-header { background: var(--header-bg) !important; border-bottom: 1px solid var(--border) !important; }
+.ad-name { color: var(--text) !important; }
+.ad-stats { background: var(--bg) !important; }
+.ad-stat-card { background: var(--card-bg) !important; border: 1px solid var(--border) !important; }
+.ad-stat-label { color: var(--text-muted) !important; }
+.ad-stat-val { color: var(--text) !important; }
+.ad-tabs { background: var(--card-bg) !important; border-bottom: 1px solid var(--border) !important; }
+.ad-tab { color: var(--text-muted) !important; background: transparent !important; }
+.ad-tab.active { color: #e84040 !important; border-color: #e84040 !important; background: transparent !important; }
+.ad-content { background: var(--bg) !important; }
+.ad-grid-2 { background: var(--bg) !important; }
+.ad-panel { background: var(--card-bg) !important; border: 1px solid var(--border) !important; }
+.ad-panel h2 { color: var(--text) !important; }
+.ad-panel-header h2 { color: var(--text) !important; }
+.ad-badge { background: var(--card-bg-2) !important; color: var(--text-muted) !important; }
+.ad-table { background: var(--card-bg) !important; width: 100%; }
+.ad-table th { background: var(--card-bg-2) !important; color: var(--text-muted) !important; border-bottom: 1px solid var(--border) !important; }
+.ad-table td { color: var(--text) !important; border-bottom: 1px solid var(--border) !important; }
+.ad-table tr:hover { background: var(--card-bg-2) !important; }
+.ad-form { background: var(--card-bg-2) !important; border: 1px solid var(--border) !important; border-radius: 10px; padding: 16px; }
+.ad-form-group label { color: var(--text-muted) !important; }
+.ad-form-footer { border-top: 1px solid var(--border) !important; }
+.ad-dept-row { background: var(--card-bg-2) !important; border-color: var(--border) !important; }
+.ad-dept-name { color: var(--text) !important; }
+.ad-dept-list { background: var(--card-bg) !important; }
+.ad-ann-item { background: var(--card-bg-2) !important; border-color: var(--border) !important; }
+.ad-ann-item-title { color: var(--text) !important; }
+.ad-ann-item-body { color: var(--text-muted) !important; }
+.ad-ann-item-header { border-color: var(--border) !important; }
+.ad-ann-item-footer { border-color: var(--border) !important; }
+.ad-ann-list { background: var(--card-bg) !important; }
+.ad-ann-preview-item { border-color: var(--border) !important; }
+.ad-ann-title { color: var(--text) !important; }
+.ad-ann-meta { color: var(--text-muted) !important; }
+.ad-ann-preview { background: var(--card-bg) !important; }
+.ad-subject-row { background: var(--card-bg-2) !important; border-color: var(--border) !important; }
+.ad-subject-name { color: var(--text) !important; }
+.ad-subject-meta { color: var(--text-muted) !important; }
+.ad-subjects-list { background: var(--card-bg) !important; }
+.ad-muted { color: var(--text-muted) !important; }
+.ad-empty { color: var(--text-muted) !important; }
