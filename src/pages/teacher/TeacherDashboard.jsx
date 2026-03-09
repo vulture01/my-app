@@ -322,6 +322,11 @@ export default function TeacherDashboard() {
   const [marksMsg, setMarksMsg] = useState('');
   const [existingMarks, setExistingMarks] = useState([]);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [editStudent, setEditStudent] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [addMode, setAddMode] = useState(false);
+  const [addForm, setAddForm] = useState({ full_name: '', roll_number: '', year: '2', section: 'A' });
+  const [studentMsg, setStudentMsg] = useState('');
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -471,6 +476,47 @@ export default function TeacherDashboard() {
     setMarksMsg('Mark deleted.');
   }
 
+  async function handleDeleteStudent(s) {
+    if (!window.confirm(`Delete ${s.profiles?.full_name}? This cannot be undone.`)) return;
+    await supabase.from('students').delete().eq('id', s.id);
+    setStudents(prev => prev.filter(x => x.id !== s.id));
+    setStudentMsg('Student deleted.');
+  }
+
+  async function handleEditSave() {
+    const { error: e1 } = await supabase.from('students')
+      .update({ roll_number: editForm.roll_number, year: editForm.year, section: editForm.section })
+      .eq('id', editStudent.id);
+    const { error: e2 } = await supabase.from('profiles')
+      .update({ full_name: editForm.full_name })
+      .eq('id', editStudent.id);
+    if (e1 || e2) { setStudentMsg('Error saving.'); return; }
+    setStudents(prev => prev.map(s => s.id === editStudent.id
+      ? { ...s, roll_number: editForm.roll_number, year: editForm.year, section: editForm.section, profiles: { ...s.profiles, full_name: editForm.full_name } }
+      : s));
+    setEditStudent(null);
+    setStudentMsg('Student updated.');
+  }
+
+  async function handleAddStudent() {
+    if (!addForm.full_name || !addForm.roll_number) { setStudentMsg('Name and Roll No are required.'); return; }
+    const newId = crypto.randomUUID();
+    const { error: e1 } = await supabase.from('profiles').insert({
+      id: newId, full_name: addForm.full_name,
+      email: addForm.roll_number.toLowerCase() + '@edusync.com', role: 'student'
+    });
+    const { error: e2 } = await supabase.from('students').insert({
+      id: newId, roll_number: addForm.roll_number,
+      year: Number(addForm.year), section: addForm.section
+    });
+    if (e1 || e2) { setStudentMsg('Error: ' + (e1?.message || e2?.message)); return; }
+    const newStudent = { id: newId, roll_number: addForm.roll_number, year: Number(addForm.year), section: addForm.section, profiles: { full_name: addForm.full_name, email: addForm.roll_number.toLowerCase() + '@edusync.com' } };
+    setStudents(prev => [...prev, newStudent]);
+    setAddMode(false);
+    setAddForm({ full_name: '', roll_number: '', year: '2', section: 'A' });
+    setStudentMsg('Student added.');
+  }
+
   if (loading) return <div className="td-loading"><div className="td-spinner" /><p>Loading...</p></div>;
   if (error) return <div className="td-error">{error}</div>;
 
@@ -534,20 +580,88 @@ export default function TeacherDashboard() {
           <div className="td-panel">
             <div className="td-panel-header">
               <h2>Student List</h2>
-              <span className="td-badge">{students.length} students</span>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <span className="td-badge">{students.length} students</span>
+                <button className="td-btn-save" style={{ padding: '5px 14px', fontSize: 13 }} onClick={() => { setAddMode(a => !a); setStudentMsg(''); }}>
+                  {addMode ? 'Cancel' : '+ Add Student'}
+                </button>
+              </div>
             </div>
+
+            {studentMsg && <p style={{ color: studentMsg.startsWith('Error') ? '#e74c3c' : '#27ae60', fontSize: 13, margin: '8px 0' }}>{studentMsg}</p>}
+
+            {/* ADD FORM */}
+            {addMode && (
+              <div style={{ background: 'var(--card-bg-2)', border: '1px solid var(--border)', borderRadius: 10, padding: 16, marginBottom: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', gap: 10, alignItems: 'end' }}>
+                <div className="td-control-group">
+                  <label>Full Name</label>
+                  <input type="text" placeholder="e.g. Ravi Kumar" value={addForm.full_name} onChange={e => setAddForm(f => ({ ...f, full_name: e.target.value }))} />
+                </div>
+                <div className="td-control-group">
+                  <label>Roll No</label>
+                  <input type="text" placeholder="e.g. BCA2024005" value={addForm.roll_number} onChange={e => setAddForm(f => ({ ...f, roll_number: e.target.value }))} />
+                </div>
+                <div className="td-control-group">
+                  <label>Year</label>
+                  <select value={addForm.year} onChange={e => setAddForm(f => ({ ...f, year: e.target.value }))}>
+                    <option value="1">Year 1</option>
+                    <option value="2">Year 2</option>
+                    <option value="3">Year 3</option>
+                  </select>
+                </div>
+                <div className="td-control-group">
+                  <label>Section</label>
+                  <select value={addForm.section} onChange={e => setAddForm(f => ({ ...f, section: e.target.value }))}>
+                    <option>A</option><option>B</option><option>C</option>
+                  </select>
+                </div>
+                <button className="td-btn-save" onClick={handleAddStudent}>Add</button>
+              </div>
+            )}
+
             {students.length === 0 ? <p className="td-empty">No students found.</p> : (
               <table className="td-table">
-                <thead><tr><th>#</th><th>Roll No</th><th>Name</th><th>Email</th><th>Year</th><th>Section</th></tr></thead>
+                <thead><tr><th>#</th><th>Roll No</th><th>Name</th><th>Email</th><th>Year</th><th>Section</th><th>Action</th></tr></thead>
                 <tbody>
                   {students.map((s, i) => (
                     <tr key={s.id}>
-                      <td>{i + 1}</td>
-                      <td><span className="td-roll">{s.roll_number}</span></td>
-                      <td>{s.profiles?.full_name || '—'}</td>
-                      <td className="td-muted">{s.profiles?.email || '—'}</td>
-                      <td>Year {s.year}</td>
-                      <td>Sec {s.section}</td>
+                      {editStudent?.id === s.id ? (
+                        <>
+                          <td>{i + 1}</td>
+                          <td><input className="td-marks-input" value={editForm.roll_number} onChange={e => setEditForm(f => ({ ...f, roll_number: e.target.value }))} style={{ width: 120 }} /></td>
+                          <td><input className="td-marks-input" value={editForm.full_name} onChange={e => setEditForm(f => ({ ...f, full_name: e.target.value }))} style={{ width: 140 }} /></td>
+                          <td className="td-muted">{s.profiles?.email || '—'}</td>
+                          <td>
+                            <select className="td-marks-input" value={editForm.year} onChange={e => setEditForm(f => ({ ...f, year: e.target.value }))} style={{ width: 70 }}>
+                              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                            </select>
+                          </td>
+                          <td>
+                            <select className="td-marks-input" value={editForm.section} onChange={e => setEditForm(f => ({ ...f, section: e.target.value }))} style={{ width: 60 }}>
+                              <option>A</option><option>B</option><option>C</option>
+                            </select>
+                          </td>
+                          <td style={{ display: 'flex', gap: 6 }}>
+                            <button onClick={handleEditSave} style={{ background: '#27ae60', color: '#fff', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Save</button>
+                            <button onClick={() => setEditStudent(null)} style={{ background: 'var(--card-bg-2)', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Cancel</button>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td>{i + 1}</td>
+                          <td><span className="td-roll">{s.roll_number}</span></td>
+                          <td>{s.profiles?.full_name || '—'}</td>
+                          <td className="td-muted">{s.profiles?.email || '—'}</td>
+                          <td>Year {s.year}</td>
+                          <td>Sec {s.section}</td>
+                          <td style={{ display: 'flex', gap: 6 }}>
+                            <button onClick={() => { setEditStudent(s); setEditForm({ full_name: s.profiles?.full_name || '', roll_number: s.roll_number, year: String(s.year), section: s.section }); setStudentMsg(''); }}
+                              style={{ background: 'rgba(39,174,96,0.15)', color: '#27ae60', border: '1px solid #27ae60', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Edit</button>
+                            <button onClick={() => handleDeleteStudent(s)}
+                              style={{ background: 'rgba(231,76,60,0.15)', color: '#e74c3c', border: '1px solid #e74c3c', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Delete</button>
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))}
                 </tbody>
