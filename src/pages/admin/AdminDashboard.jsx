@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import './AdminDashboard.css';
+import { ThemeToggle } from '../../context/ThemeContext';
 function AIChatBuddy({ adminName }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -305,6 +306,7 @@ export default function AdminDashboard() {
         <div className="ad-header-center"><span className="ad-role-badge">ADMIN</span></div>
         <div className="ad-header-right">
           <span className="ad-name">{profile?.full_name || 'Admin'}</span>
+           <ThemeToggle />
           <button className="ad-logout" onClick={async () => { await supabase.auth.signOut(); window.location.href = '/'; }}>Logout</button>
         </div>
       </header>

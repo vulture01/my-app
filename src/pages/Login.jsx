@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { useNavigate } from 'react-router-dom'
+import { ThemeToggle } from '../context/ThemeContext'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -69,7 +70,8 @@ export default function Login() {
   }
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f0f2f5' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: 'var(--bg, #f0f2f5)' }}>
+      <div style={{ position: 'fixed', top: 16, right: 16 }}><ThemeToggle /></div>
       <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '8px', width: '360px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
 
         {!showChangePw ? (

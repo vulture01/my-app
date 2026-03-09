@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../../supabaseClient';
 import './StudentDashboard.css';
+import { ThemeToggle } from '../../context/ThemeContext';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -363,6 +364,7 @@ export default function StudentDashboard() {
           <div className="badge">STUDENT</div>
         </div>
         <div className="dash-meta">
+          <ThemeToggle />
           <button onClick={async () => { await supabase.auth.signOut(); window.location.href = '/'; }} style={{ background: '#e84040', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Logout</button>
           <div>{studentDetails?.roll_number || student?.email}</div>
           <div>{studentDetails ? `${studentDetails.departments?.name || 'CS Dept'} · Year ${studentDetails.year} · Sec ${studentDetails.section}` : ''}</div>

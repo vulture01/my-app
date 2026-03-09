@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import './TeacherDashboard.css';
+import { ThemeToggle } from '../../context/ThemeContext';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const DAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -487,6 +488,7 @@ export default function TeacherDashboard() {
         <div className="td-header-right">
           <span className="td-name">{profile?.full_name || 'Teacher'}</span>
           <span className="td-emp">EMP: {profile?.employee_code || '—'}</span>
+          <ThemeToggle />
           <button className="td-logout" onClick={async () => { await supabase.auth.signOut(); window.location.href = '/'; }}>Logout</button>
         </div>
       </header>
