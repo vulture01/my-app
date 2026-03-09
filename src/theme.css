@@ -105,3 +105,50 @@ input[type="number"], textarea {
   background: #ffffff;
   box-shadow: 0 4px 24px rgba(0,0,0,0.1);
 }
+/* Fix hover and selected states in light mode */
+[data-theme="light"] .td-att-row,
+[data-theme="light"] .td-marks-row,
+[data-theme="light"] .ann-item,
+[data-theme="light"] .ad-ann-item,
+[data-theme="light"] .slot-card,
+[data-theme="light"] .td-tt-slot {
+  background: var(--card-bg-2);
+  color: var(--text);
+}
+
+[data-theme="light"] .td-tab,
+[data-theme="light"] .ad-tab,
+[data-theme="light"] .day-tab,
+[data-theme="light"] .td-day-btn {
+  color: var(--text-muted);
+  background: transparent;
+}
+
+[data-theme="light"] .td-tab.active,
+[data-theme="light"] .ad-tab.active {
+  color: #e84040;
+}
+
+[data-theme="light"] .td-toggle-btn,
+[data-theme="light"] .td-btn-sm {
+  background: var(--card-bg-2);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .mark-row,
+[data-theme="light"] .att-row {
+  border-color: var(--border);
+}
+
+[data-theme="light"] .ai-card,
+[data-theme="light"] .td-panel,
+[data-theme="light"] .ad-panel {
+  background: var(--card-bg);
+  border-color: var(--border);
+}
+
+[data-theme="light"] option {
+  background: #ffffff;
+  color: #1a1a2e;
+}
