@@ -576,3 +576,13 @@
   left: 50%;
   transform: translateX(-50%);
 }
+.badge {
+  background: linear-gradient(135deg, #e84040, #ff6b35);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 6px 18px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
