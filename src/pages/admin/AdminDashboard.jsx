@@ -1,7 +1,114 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import './AdminDashboard.css';
+function AIChatBuddy({ adminName }) {
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    { role: 'assistant', content: `Hi ${adminName}! 👋 I'm your AI admin assistant. Ask me about managing departments, students, announcements, or anything about EduSync!` }
+  ]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
+  async function sendMessage() {
+    if (!input.trim() || loading) return;
+    const userMsg = { role: 'user', content: input };
+    setMessages(m => [...m, userMsg]);
+    setInput('');
+    setLoading(true);
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [
+            { role: 'system', content: `You are a helpful assistant for a college admin using EduSync, an educational management system. Help with administrative tasks, department management, announcements, and institutional queries. Be concise and professional.` },
+            ...messages,
+            userMsg
+          ],
+          max_tokens: 300
+        })
+      });
+      const data = await res.json();
+      const reply = data.choices?.[0]?.message?.content || 'Sorry, I could not respond.';
+      setMessages(m => [...m, { role: 'assistant', content: reply }]);
+    } catch(e) {
+      setMessages(m => [...m, { role: 'assistant', content: '❌ Error connecting. Try again!' }]);
+    }
+    setLoading(false);
+  }
+
+  return (
+    <>
+      <button onClick={() => setOpen(o => !o)} style={{
+        position: 'fixed', bottom: 24, right: 24, zIndex: 1000,
+        width: 56, height: 56, borderRadius: '50%',
+        background: 'linear-gradient(135deg, #e84040, #ff6b35)',
+        border: 'none', cursor: 'pointer', fontSize: 24,
+        boxShadow: '0 4px 20px rgba(232,64,64,0.5)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center'
+      }}>
+        {open ? '✕' : '🤖'}
+      </button>
+
+      {open && (
+        <div style={{
+          position: 'fixed', bottom: 90, right: 24, zIndex: 999,
+          width: 340, height: 460, background: '#1a1a2e',
+          borderRadius: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+          border: '1px solid #2a2a3e', display: 'flex', flexDirection: 'column',
+          overflow: 'hidden'
+        }}>
+          <div style={{ padding: '14px 16px', background: 'linear-gradient(135deg, #e84040, #ff6b35)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 20 }}>🤖</span>
+            <div>
+              <div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>AI Admin Assistant</div>
+              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11 }}>Smart insights at your fingertips</div>
+            </div>
+          </div>
+
+          <div style={{ flex: 1, overflowY: 'auto', padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {messages.map((m, i) => (
+              <div key={i} style={{
+                alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+                maxWidth: '80%',
+                background: m.role === 'user' ? '#e84040' : '#2a2a3e',
+                color: '#fff', borderRadius: 12, padding: '8px 12px', fontSize: 13, lineHeight: 1.5
+              }}>
+                {m.content}
+              </div>
+            ))}
+            {loading && (
+              <div style={{ alignSelf: 'flex-start', background: '#2a2a3e', color: '#aaa', borderRadius: 12, padding: '8px 12px', fontSize: 13 }}>
+                Thinking...
+              </div>
+            )}
+          </div>
+
+          <div style={{ padding: 12, borderTop: '1px solid #2a2a3e', display: 'flex', gap: 8 }}>
+            <input
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && sendMessage()}
+              placeholder="Ask anything..."
+              style={{
+                flex: 1, background: '#2a2a3e', border: '1px solid #3a3a4e',
+                borderRadius: 8, padding: '8px 12px', color: '#fff', fontSize: 13, outline: 'none'
+              }}
+            />
+            <button onClick={sendMessage} disabled={loading} style={{
+              background: '#e84040', border: 'none', borderRadius: 8,
+              padding: '8px 14px', color: '#fff', cursor: 'pointer', fontSize: 16
+            }}>➤</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 export default function AdminDashboard() {
   const [profile, setProfile] = useState(null);
   const [stats, setStats] = useState({ students: 0, teachers: 0, departments: 0, subjects: 0 });
@@ -498,6 +605,7 @@ export default function AdminDashboard() {
         )}
 
       </div>
+      <AIChatBuddy adminName={profile?.full_name?.split(' ')[0] || 'Admin'} />
     </div>
   );
 }
