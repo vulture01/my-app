@@ -140,6 +140,12 @@ export default function AdminDashboard() {
   const [newTeacherDept, setNewTeacherDept] = useState('');
   const [teacherMsg, setTeacherMsg] = useState('');
 
+  // Edit student/teacher
+  const [editStudent, setEditStudent] = useState(null);
+  const [editStudentForm, setEditStudentForm] = useState({});
+  const [editTeacher, setEditTeacher] = useState(null);
+  const [editTeacherForm, setEditTeacherForm] = useState({});
+
   // Announcement form
   const [annTitle, setAnnTitle] = useState('');
   const [annBody, setAnnBody] = useState('');
@@ -296,6 +302,36 @@ export default function AdminDashboard() {
     return `${Math.floor(diff / 86400)}d ago`;
   }
 
+ async function handleEditStudentSave() {
+    const { error: e1 } = await supabase.from('students')
+      .update({ roll_number: editStudentForm.roll_number, year: editStudentForm.year, section: editStudentForm.section })
+      .eq('id', editStudent.id);
+    const { error: e2 } = await supabase.from('profiles')
+      .update({ full_name: editStudentForm.full_name })
+      .eq('id', editStudent.id);
+    if (e1 || e2) { setStudentMsg('Error saving.'); return; }
+    setStudents(prev => prev.map(s => s.id === editStudent.id
+      ? { ...s, roll_number: editStudentForm.roll_number, year: editStudentForm.year, section: editStudentForm.section, profiles: { ...s.profiles, full_name: editStudentForm.full_name } }
+      : s));
+    setEditStudent(null);
+    setStudentMsg('Student updated.');
+  }
+
+  async function handleEditTeacherSave() {
+    const { error: e1 } = await supabase.from('teachers')
+      .update({ employee_code: editTeacherForm.employee_code })
+      .eq('id', editTeacher.id);
+    const { error: e2 } = await supabase.from('profiles')
+      .update({ full_name: editTeacherForm.full_name })
+      .eq('id', editTeacher.id);
+    if (e1 || e2) { setTeacherMsg('Error saving.'); return; }
+    setTeachers(prev => prev.map(t => t.id === editTeacher.id
+      ? { ...t, employee_code: editTeacherForm.employee_code, profiles: { ...t.profiles, full_name: editTeacherForm.full_name } }
+      : t));
+    setEditTeacher(null);
+    setTeacherMsg('Teacher updated.');
+  }
+
   if (loading) return <div className="ad-loading"><div className="ad-spinner" /><p>Loading...</p></div>;
   if (error) return <div className="ad-error">{error}</div>;
 
@@ -446,11 +482,38 @@ export default function AdminDashboard() {
                 <tbody>
                   {students.map(s => (
                     <tr key={s.id}>
-                      <td><span className="ad-roll">{s.roll_number}</span></td>
-                      <td>{s.profiles?.full_name || '—'}</td>
-                      <td className="ad-muted">{s.departments?.name || '—'}</td>
-                      <td>Y{s.year}-{s.section}</td>
-                      <td><button className="ad-btn-delete" onClick={()=>deleteStudent(s.id)}>🗑️</button></td>
+                      {editStudent?.id === s.id ? (
+                        <>
+                          <td><input className="td-marks-input" value={editStudentForm.roll_number} onChange={e => setEditStudentForm(f => ({ ...f, roll_number: e.target.value }))} style={{ width: 110 }} /></td>
+                          <td><input className="td-marks-input" value={editStudentForm.full_name} onChange={e => setEditStudentForm(f => ({ ...f, full_name: e.target.value }))} style={{ width: 130 }} /></td>
+                          <td className="ad-muted">{s.departments?.name || '—'}</td>
+                          <td>
+                            <select className="td-marks-input" value={editStudentForm.year} onChange={e => setEditStudentForm(f => ({ ...f, year: e.target.value }))} style={{ width: 55 }}>
+                              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                            </select>
+                            <select className="td-marks-input" value={editStudentForm.section} onChange={e => setEditStudentForm(f => ({ ...f, section: e.target.value }))} style={{ width: 50, marginLeft: 4 }}>
+                              <option>A</option><option>B</option><option>C</option>
+                            </select>
+                          </td>
+                          <td style={{ display: 'flex', gap: 6 }}>
+                            <button onClick={handleEditStudentSave} style={{ background: '#27ae60', color: '#fff', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Save</button>
+                            <button onClick={() => setEditStudent(null)} style={{ background: 'var(--card-bg-2)', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Cancel</button>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td><span className="ad-roll">{s.roll_number}</span></td>
+                          <td>{s.profiles?.full_name || '—'}</td>
+                          <td className="ad-muted">{s.departments?.name || '—'}</td>
+                          <td>Y{s.year}-{s.section}</td>
+                          <td style={{ display: 'flex', gap: 6 }}>
+                            <button onClick={() => { setEditStudent(s); setEditStudentForm({ full_name: s.profiles?.full_name || '', roll_number: s.roll_number, year: String(s.year), section: s.section }); setStudentMsg(''); }}
+                              style={{ background: 'rgba(39,174,96,0.15)', color: '#27ae60', border: '1px solid #27ae60', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Edit</button>
+                            <button onClick={() => deleteStudent(s.id)}
+                              style={{ background: 'rgba(231,76,60,0.15)', color: '#e74c3c', border: '1px solid #e74c3c', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Delete</button>
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))}
                   {students.length === 0 && <tr><td colSpan={5} className="ad-empty">No students.</td></tr>}
@@ -504,11 +567,31 @@ export default function AdminDashboard() {
                 <tbody>
                   {teachers.map(t => (
                     <tr key={t.id}>
-                      <td><span className="ad-roll">{t.employee_code}</span></td>
-                      <td>{t.profiles?.full_name || '—'}</td>
-                      <td className="ad-muted">{t.profiles?.email || '—'}</td>
-                      <td className="ad-muted">{t.departments?.name || '—'}</td>
-                      <td><button className="ad-btn-delete" onClick={()=>deleteTeacher(t.id)}>🗑️</button></td>
+                      {editTeacher?.id === t.id ? (
+                        <>
+                          <td><input className="td-marks-input" value={editTeacherForm.employee_code} onChange={e => setEditTeacherForm(f => ({ ...f, employee_code: e.target.value }))} style={{ width: 90 }} /></td>
+                          <td><input className="td-marks-input" value={editTeacherForm.full_name} onChange={e => setEditTeacherForm(f => ({ ...f, full_name: e.target.value }))} style={{ width: 140 }} /></td>
+                          <td className="ad-muted">{t.profiles?.email || '—'}</td>
+                          <td className="ad-muted">{t.departments?.name || '—'}</td>
+                          <td style={{ display: 'flex', gap: 6 }}>
+                            <button onClick={handleEditTeacherSave} style={{ background: '#27ae60', color: '#fff', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Save</button>
+                            <button onClick={() => setEditTeacher(null)} style={{ background: 'var(--card-bg-2)', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Cancel</button>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td><span className="ad-roll">{t.employee_code}</span></td>
+                          <td>{t.profiles?.full_name || '—'}</td>
+                          <td className="ad-muted">{t.profiles?.email || '—'}</td>
+                          <td className="ad-muted">{t.departments?.name || '—'}</td>
+                          <td style={{ display: 'flex', gap: 6 }}>
+                            <button onClick={() => { setEditTeacher(t); setEditTeacherForm({ full_name: t.profiles?.full_name || '', employee_code: t.employee_code || '' }); setTeacherMsg(''); }}
+                              style={{ background: 'rgba(39,174,96,0.15)', color: '#27ae60', border: '1px solid #27ae60', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Edit</button>
+                            <button onClick={() => deleteTeacher(t.id)}
+                              style={{ background: 'rgba(231,76,60,0.15)', color: '#e74c3c', border: '1px solid #e74c3c', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Delete</button>
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))}
                   {teachers.length === 0 && <tr><td colSpan={5} className="ad-empty">No teachers.</td></tr>}
