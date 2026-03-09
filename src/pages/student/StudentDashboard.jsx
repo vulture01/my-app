@@ -500,9 +500,9 @@ export default function StudentDashboard() {
 
       </div>
       <AIChatBuddy 
-  studentName={profile?.full_name?.split(' ')[0] || 'Student'}
-  department={student?.departments?.name || 'BCA'}
-  year={student?.year || 2}
+  studentName={student?.full_name?.split(' ')[0] || 'Student'}
+  department={studentDetails?.departments?.name || 'BCA'}
+  year={studentDetails?.year || 2}
 />
     </div>
   );
