@@ -297,7 +297,7 @@ export default function AdminDashboard() {
   }
 
   if (loading) return <div className="ad-loading"><div className="ad-spinner" /><p>Loading...</p></div>;
-  if (error) return <div className="ad-error">⚠ {error}</div>;
+  if (error) return <div className="ad-error">{error}</div>;
 
   return (
     <div className="ad-root">
@@ -580,7 +580,7 @@ export default function AdminDashboard() {
                 <div className="ad-form-footer">
                   {annMsg && <span className="ad-msg">{annMsg}</span>}
                   <button className="ad-btn-save" onClick={createAnnouncement} disabled={annSaving}>
-                    {annSaving ? 'Posting...' : '📢 Post Announcement'}
+                    {annSaving ? 'Posting...' : 'Post Announcement'}
                   </button>
                 </div>
               </div>
