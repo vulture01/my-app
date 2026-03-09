@@ -414,7 +414,7 @@ export default function StudentDashboard() {
           <div className="stat-sub">{marks.length} assessments</div>
         </div>
         <div className="stat-card">
-          <span className="stat-icon">GPA</span>
+          <span className="stat-icon">CGPA</span>
           <div className="stat-label">CGPA</div>
           <div className="stat-value" style={{ color: 'var(--accent)' }}>
             {cgpa !== null ? cgpa : '—'}
