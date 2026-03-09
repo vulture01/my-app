@@ -305,7 +305,7 @@ export default function AdminDashboard() {
         <div className="ad-header-center"><span className="ad-role-badge">ADMIN</span></div>
         <div className="ad-header-right">
           <span className="ad-name">{profile?.full_name || 'Admin'}</span>
-          <button className="ad-logout" onClick={() => supabase.auth.signOut()}>Logout</button>
+          <button className="ad-logout" onClick={async () => { await supabase.auth.signOut(); window.location.href = '/'; }}>Logout</button>
         </div>
       </header>
 

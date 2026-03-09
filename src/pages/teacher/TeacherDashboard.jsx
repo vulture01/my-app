@@ -279,7 +279,7 @@ export default function TeacherDashboard() {
         <div className="td-header-right">
           <span className="td-name">{profile?.full_name || 'Teacher'}</span>
           <span className="td-emp">EMP: {profile?.employee_code || '—'}</span>
-          <button className="td-logout" onClick={() => supabase.auth.signOut()}>Logout</button>
+          <button className="td-logout" onClick={async () => { await supabase.auth.signOut(); window.location.href = '/'; }}>Logout</button>
         </div>
       </header>
 

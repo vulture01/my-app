@@ -330,6 +330,7 @@ export default function StudentDashboard() {
           <p>Welcome back, {student?.full_name?.split(' ')[0] || 'Student'} 👋</p>
         </div>
         <div className="dash-meta">
+          <button onClick={async () => { await supabase.auth.signOut(); window.location.href = '/'; }} style={{background:'#e84040',color:'#fff',border:'none',borderRadius:8,padding:'6px 16px',cursor:'pointer',fontSize:13,fontWeight:600}}>Logout</button>
           <div className="badge">Student</div>
           <div>{studentDetails?.roll_number || student?.email}</div>
           <div>{studentDetails ? `${studentDetails.departments?.name || 'CS Dept'} · Year ${studentDetails.year} · Sec ${studentDetails.section}` : ''}</div>
