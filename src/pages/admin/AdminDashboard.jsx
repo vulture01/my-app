@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import './AdminDashboard.css';
 import { ThemeToggle } from '../../context/ThemeContext';
+
 function AIChatBuddy({ adminName }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: `Hi ${adminName}! 👋 I'm your AI admin assistant. Ask me about managing departments, students, announcements, or anything about EduSync!` }
+    { role: 'assistant', content: `Hi ${adminName}! I am your AI admin assistant. Ask me about managing departments, students, announcements, or anything about EduSync!` }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,25 +20,20 @@ function AIChatBuddy({ adminName }) {
     try {
       const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}` },
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',
           messages: [
-            { role: 'system', content: `You are a helpful assistant for a college admin using EduSync, an educational management system. Help with administrative tasks, department management, announcements, and institutional queries. Be concise and professional.` },
-            ...messages,
-            userMsg
+            { role: 'system', content: 'You are a helpful assistant for a college admin using EduSync. Help with administrative tasks, department management, announcements, and institutional queries. Be concise and professional.' },
+            ...messages, userMsg
           ],
           max_tokens: 300
         })
       });
       const data = await res.json();
-      const reply = data.choices?.[0]?.message?.content || 'Sorry, I could not respond.';
-      setMessages(m => [...m, { role: 'assistant', content: reply }]);
-    } catch(e) {
-      setMessages(m => [...m, { role: 'assistant', content: '❌ Error connecting. Try again!' }]);
+      setMessages(m => [...m, { role: 'assistant', content: data.choices?.[0]?.message?.content || 'Sorry, I could not respond.' }]);
+    } catch {
+      setMessages(m => [...m, { role: 'assistant', content: 'Error connecting. Try again!' }]);
     }
     setLoading(false);
   }
@@ -51,17 +47,14 @@ function AIChatBuddy({ adminName }) {
         border: 'none', cursor: 'pointer', fontSize: 24,
         boxShadow: '0 4px 20px rgba(232,64,64,0.5)',
         display: 'flex', alignItems: 'center', justifyContent: 'center'
-      }}>
-        {open ? '✕' : '🤖'}
-      </button>
+      }}>{open ? '✕' : '🤖'}</button>
 
       {open && (
         <div style={{
           position: 'fixed', bottom: 90, right: 24, zIndex: 999,
           width: 340, height: 460, background: '#1a1a2e',
           borderRadius: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-          border: '1px solid #2a2a3e', display: 'flex', flexDirection: 'column',
-          overflow: 'hidden'
+          border: '1px solid #2a2a3e', display: 'flex', flexDirection: 'column', overflow: 'hidden'
         }}>
           <div style={{ padding: '14px 16px', background: 'linear-gradient(135deg, #e84040, #ff6b35)', display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontSize: 20 }}>🤖</span>
@@ -70,46 +63,29 @@ function AIChatBuddy({ adminName }) {
               <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11 }}>Smart insights at your fingertips</div>
             </div>
           </div>
-
           <div style={{ flex: 1, overflowY: 'auto', padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
             {messages.map((m, i) => (
               <div key={i} style={{
-                alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
-                maxWidth: '80%',
+                alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '80%',
                 background: m.role === 'user' ? '#e84040' : '#2a2a3e',
                 color: '#fff', borderRadius: 12, padding: '8px 12px', fontSize: 13, lineHeight: 1.5
-              }}>
-                {m.content}
-              </div>
+              }}>{m.content}</div>
             ))}
-            {loading && (
-              <div style={{ alignSelf: 'flex-start', background: '#2a2a3e', color: '#aaa', borderRadius: 12, padding: '8px 12px', fontSize: 13 }}>
-                Thinking...
-              </div>
-            )}
+            {loading && <div style={{ alignSelf: 'flex-start', background: '#2a2a3e', color: '#aaa', borderRadius: 12, padding: '8px 12px', fontSize: 13 }}>Thinking...</div>}
           </div>
-
           <div style={{ padding: 12, borderTop: '1px solid #2a2a3e', display: 'flex', gap: 8 }}>
-            <input
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && sendMessage()}
+            <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendMessage()}
               placeholder="Ask anything..."
-              style={{
-                flex: 1, background: '#2a2a3e', border: '1px solid #3a3a4e',
-                borderRadius: 8, padding: '8px 12px', color: '#fff', fontSize: 13, outline: 'none'
-              }}
-            />
-            <button onClick={sendMessage} disabled={loading} style={{
-              background: '#e84040', border: 'none', borderRadius: 8,
-              padding: '8px 14px', color: '#fff', cursor: 'pointer', fontSize: 16
-            }}>➤</button>
+              style={{ flex: 1, background: '#2a2a3e', border: '1px solid #3a3a4e', borderRadius: 8, padding: '8px 12px', color: '#fff', fontSize: 13, outline: 'none' }} />
+            <button onClick={sendMessage} disabled={loading}
+              style={{ background: '#e84040', border: 'none', borderRadius: 8, padding: '8px 14px', color: '#fff', cursor: 'pointer', fontSize: 16 }}>➤</button>
           </div>
         </div>
       )}
     </>
   );
 }
+
 export default function AdminDashboard() {
   const [profile, setProfile] = useState(null);
   const [stats, setStats] = useState({ students: 0, teachers: 0, departments: 0, subjects: 0 });
@@ -158,6 +134,29 @@ export default function AdminDashboard() {
   const [deptSaving, setDeptSaving] = useState(false);
   const [deptMsg, setDeptMsg] = useState('');
 
+  // Leave
+  const [leaveRequests, setLeaveRequests] = useState([]);
+
+  // Payroll
+  const [payrolls, setPayrolls] = useState([]);
+  const [showAddPayroll, setShowAddPayroll] = useState(false);
+  const [newPayroll, setNewPayroll] = useState({ teacher_id: '', month: '', basic_pay: '', allowances: '', deductions: '', paid: false });
+  const [payrollMsg, setPayrollMsg] = useState('');
+
+  // Fees
+  const [fees, setFees] = useState([]);
+
+  // Timetable
+  const [timetable, setTimetable] = useState([]);
+  const [showAddSlot, setShowAddSlot] = useState(false);
+  const [newSlot, setNewSlot] = useState({ subject_id: '', day: 'Monday', start_time: '', end_time: '' });
+  const [ttMsg, setTtMsg] = useState('');
+
+  // Hall Tickets
+  const [exams, setExams] = useState([]);
+  const [hallTickets, setHallTickets] = useState([]);
+  const [selectedExam, setSelectedExam] = useState('');
+
   useEffect(() => { fetchAll(); }, []);
 
   async function fetchAll() {
@@ -168,7 +167,8 @@ export default function AdminDashboard() {
 
       const [
         { count: sc }, { count: tc }, { count: dc }, { count: subc },
-        { data: studs }, { data: tchs }, { data: depts }, { data: subs }, { data: anns }
+        { data: studs }, { data: tchs }, { data: depts }, { data: subs }, { data: anns },
+        { data: leaves }, { data: pays }, { data: feesData }, { data: tt }, { data: examsData }
       ] = await Promise.all([
         supabase.from('students').select('*', { count: 'exact', head: true }),
         supabase.from('teachers').select('*', { count: 'exact', head: true }),
@@ -179,6 +179,11 @@ export default function AdminDashboard() {
         supabase.from('departments').select('id, name, created_at'),
         supabase.from('subjects').select('id, name, year, section, departments(name)'),
         supabase.from('announcements').select('id, title, body, posted_by, role_target, created_at').order('created_at', { ascending: false }),
+        supabase.from('leave_requests').select('id, teacher_id, leave_type, from_date, to_date, reason, status, admin_remark, created_at, profiles(full_name)').order('created_at', { ascending: false }),
+        supabase.from('payroll').select('id, teacher_id, month, basic_pay, allowances, deductions, net_pay, paid, profiles(full_name)').order('created_at', { ascending: false }),
+        supabase.from('fees').select('id, student_id, amount, fee_type, due_date, paid, paid_date, profiles(full_name)'),
+        supabase.from('timetable').select('id, day, start_time, end_time, subject_id, subjects(name)').order('day'),
+        supabase.from('exams').select('id, title, exam_type, exam_date, start_time, end_time, hall, subjects(name)').order('exam_date'),
       ]);
 
       setStats({ students: sc || 0, teachers: tc || 0, departments: dc || 0, subjects: subc || 0 });
@@ -187,6 +192,11 @@ export default function AdminDashboard() {
       setDepartments(depts || []);
       setSubjects(subs || []);
       setAnnouncements(anns || []);
+      setLeaveRequests(leaves || []);
+      setPayrolls(pays || []);
+      setFees(feesData || []);
+      setTimetable(tt || []);
+      setExams(examsData || []);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -194,19 +204,24 @@ export default function AdminDashboard() {
     }
   }
 
+  async function loadHallTickets(examId) {
+    const { data } = await supabase
+      .from('hall_tickets')
+      .select('id, student_id, seat_number, hall_number, issued, profiles(full_name), students(roll_number)')
+      .eq('exam_id', examId);
+    setHallTickets(data || []);
+  }
+
   async function createAnnouncement() {
     if (!annTitle.trim()) return;
     setAnnSaving(true); setAnnMsg('');
     try {
-      const { error: e } = await supabase.from('announcements').insert({
-        title: annTitle, body: annBody,
-        posted_by: profile.id, role_target: annTarget,
-      });
+      const { error: e } = await supabase.from('announcements').insert({ title: annTitle, body: annBody, posted_by: profile.id, role_target: annTarget });
       if (e) throw e;
       setAnnTitle(''); setAnnBody(''); setAnnTarget('all');
-      setAnnMsg('✅ Announcement posted!');
+      setAnnMsg('Announcement posted!');
       fetchAll();
-    } catch (e) { setAnnMsg('❌ ' + e.message); }
+    } catch (e) { setAnnMsg('Error: ' + e.message); }
     finally { setAnnSaving(false); }
   }
 
@@ -220,24 +235,14 @@ export default function AdminDashboard() {
     setStudentMsg('');
     try {
       const newId = crypto.randomUUID();
-      const { error: e1 } = await supabase.from('profiles').insert({
-        id: newId, full_name: newStudentName.trim(),
-        email: newStudentEmail.trim() || `${newStudentRoll.toLowerCase()}@edusync.com`,
-        role: 'student'
-      });
+      const { error: e1 } = await supabase.from('profiles').insert({ id: newId, full_name: newStudentName.trim(), email: newStudentEmail.trim() || `${newStudentRoll.toLowerCase()}@edusync.com`, role: 'student' });
       if (e1) throw e1;
-      const { error: e2 } = await supabase.from('students').insert({
-        id: newId, department_id: newStudentDept,
-        year: parseInt(newStudentYear), section: newStudentSection,
-        roll_number: newStudentRoll.trim()
-      });
+      const { error: e2 } = await supabase.from('students').insert({ id: newId, department_id: newStudentDept, year: parseInt(newStudentYear), section: newStudentSection, roll_number: newStudentRoll.trim() });
       if (e2) throw e2;
-      setStudentMsg('✅ Student added!');
-      setNewStudentName(''); setNewStudentEmail(''); setNewStudentRoll('');
-      setNewStudentYear('1'); setNewStudentSection('A'); setNewStudentDept('');
-      setShowAddStudent(false);
-      fetchAll();
-    } catch(e) { setStudentMsg('❌ ' + e.message); }
+      setStudentMsg('Student added!');
+      setNewStudentName(''); setNewStudentEmail(''); setNewStudentRoll(''); setNewStudentYear('1'); setNewStudentSection('A'); setNewStudentDept('');
+      setShowAddStudent(false); fetchAll();
+    } catch (e) { setStudentMsg('Error: ' + e.message); }
   }
 
   async function deleteStudent(id) {
@@ -247,27 +252,27 @@ export default function AdminDashboard() {
     setStudents(s => s.filter(x => x.id !== id));
   }
 
+  async function handleEditStudentSave() {
+    const { error: e1 } = await supabase.from('students').update({ roll_number: editStudentForm.roll_number, year: editStudentForm.year, section: editStudentForm.section }).eq('id', editStudent.id);
+    const { error: e2 } = await supabase.from('profiles').update({ full_name: editStudentForm.full_name }).eq('id', editStudent.id);
+    if (e1 || e2) { setStudentMsg('Error saving.'); return; }
+    setStudents(prev => prev.map(s => s.id === editStudent.id ? { ...s, roll_number: editStudentForm.roll_number, year: editStudentForm.year, section: editStudentForm.section, profiles: { ...s.profiles, full_name: editStudentForm.full_name } } : s));
+    setEditStudent(null); setStudentMsg('Student updated.');
+  }
+
   async function addTeacher() {
     if (!newTeacherName.trim() || !newTeacherEmpCode.trim() || !newTeacherDept) return;
     setTeacherMsg('');
     try {
       const newId = crypto.randomUUID();
-      const { error: e1 } = await supabase.from('profiles').insert({
-        id: newId, full_name: newTeacherName.trim(),
-        email: newTeacherEmail.trim() || `${newTeacherEmpCode.toLowerCase()}@edusync.com`,
-        role: 'teacher'
-      });
+      const { error: e1 } = await supabase.from('profiles').insert({ id: newId, full_name: newTeacherName.trim(), email: newTeacherEmail.trim() || `${newTeacherEmpCode.toLowerCase()}@edusync.com`, role: 'teacher' });
       if (e1) throw e1;
-      const { error: e2 } = await supabase.from('teachers').insert({
-        id: newId, department_id: newTeacherDept,
-        employee_code: newTeacherEmpCode.trim()
-      });
+      const { error: e2 } = await supabase.from('teachers').insert({ id: newId, department_id: newTeacherDept, employee_code: newTeacherEmpCode.trim() });
       if (e2) throw e2;
-      setTeacherMsg('✅ Teacher added!');
+      setTeacherMsg('Teacher added!');
       setNewTeacherName(''); setNewTeacherEmail(''); setNewTeacherEmpCode(''); setNewTeacherDept('');
-      setShowAddTeacher(false);
-      fetchAll();
-    } catch(e) { setTeacherMsg('❌ ' + e.message); }
+      setShowAddTeacher(false); fetchAll();
+    } catch (e) { setTeacherMsg('Error: ' + e.message); }
   }
 
   async function deleteTeacher(id) {
@@ -277,21 +282,68 @@ export default function AdminDashboard() {
     setTeachers(t => t.filter(x => x.id !== id));
   }
 
+  async function handleEditTeacherSave() {
+    const { error: e1 } = await supabase.from('teachers').update({ employee_code: editTeacherForm.employee_code }).eq('id', editTeacher.id);
+    const { error: e2 } = await supabase.from('profiles').update({ full_name: editTeacherForm.full_name }).eq('id', editTeacher.id);
+    if (e1 || e2) { setTeacherMsg('Error saving.'); return; }
+    setTeachers(prev => prev.map(t => t.id === editTeacher.id ? { ...t, employee_code: editTeacherForm.employee_code, profiles: { ...t.profiles, full_name: editTeacherForm.full_name } } : t));
+    setEditTeacher(null); setTeacherMsg('Teacher updated.');
+  }
+
   async function createDepartment() {
     if (!deptName.trim()) return;
     setDeptSaving(true); setDeptMsg('');
     try {
       const { error: e } = await supabase.from('departments').insert({ name: deptName });
       if (e) throw e;
-      setDeptName(''); setDeptMsg('✅ Department created!');
-      fetchAll();
-    } catch (e) { setDeptMsg('❌ ' + e.message); }
+      setDeptName(''); setDeptMsg('Department created!'); fetchAll();
+    } catch (e) { setDeptMsg('Error: ' + e.message); }
     finally { setDeptSaving(false); }
   }
 
   async function deleteDepartment(id) {
     const { error: e } = await supabase.from('departments').delete().eq('id', id);
     if (!e) setDepartments(d => d.filter(x => x.id !== id));
+  }
+
+  async function updateLeaveStatus(id, status, remark) {
+    await supabase.from('leave_requests').update({ status, admin_remark: remark }).eq('id', id);
+    setLeaveRequests(prev => prev.map(l => l.id === id ? { ...l, status, admin_remark: remark } : l));
+  }
+
+  async function addPayroll() {
+    if (!newPayroll.teacher_id || !newPayroll.month || !newPayroll.basic_pay) { setPayrollMsg('Teacher, month and basic pay are required.'); return; }
+    const { error: e } = await supabase.from('payroll').insert({
+      teacher_id: newPayroll.teacher_id,
+      month: newPayroll.month,
+      basic_pay: Number(newPayroll.basic_pay),
+      allowances: Number(newPayroll.allowances || 0),
+      deductions: Number(newPayroll.deductions || 0),
+      paid: newPayroll.paid
+    });
+    if (e) { setPayrollMsg('Error: ' + e.message); return; }
+    setPayrollMsg('Payroll added!');
+    setNewPayroll({ teacher_id: '', month: '', basic_pay: '', allowances: '', deductions: '', paid: false });
+    setShowAddPayroll(false); fetchAll();
+  }
+
+  async function toggleFee(id, currentPaid) {
+    await supabase.from('fees').update({ paid: !currentPaid, paid_date: !currentPaid ? new Date().toISOString().split('T')[0] : null }).eq('id', id);
+    setFees(prev => prev.map(f => f.id === id ? { ...f, paid: !currentPaid } : f));
+  }
+
+  async function addTimetableSlot() {
+    if (!newSlot.subject_id || !newSlot.start_time || !newSlot.end_time) { setTtMsg('All fields required.'); return; }
+    const { error: e } = await supabase.from('timetable').insert({ subject_id: newSlot.subject_id, day: newSlot.day, start_time: newSlot.start_time, end_time: newSlot.end_time });
+    if (e) { setTtMsg('Error: ' + e.message); return; }
+    setTtMsg('Slot added!');
+    setNewSlot({ subject_id: '', day: 'Monday', start_time: '', end_time: '' });
+    setShowAddSlot(false); fetchAll();
+  }
+
+  async function deleteTimetableSlot(id) {
+    await supabase.from('timetable').delete().eq('id', id);
+    setTimetable(prev => prev.filter(t => t.id !== id));
   }
 
   function timeAgo(ts) {
@@ -302,38 +354,10 @@ export default function AdminDashboard() {
     return `${Math.floor(diff / 86400)}d ago`;
   }
 
- async function handleEditStudentSave() {
-    const { error: e1 } = await supabase.from('students')
-      .update({ roll_number: editStudentForm.roll_number, year: editStudentForm.year, section: editStudentForm.section })
-      .eq('id', editStudent.id);
-    const { error: e2 } = await supabase.from('profiles')
-      .update({ full_name: editStudentForm.full_name })
-      .eq('id', editStudent.id);
-    if (e1 || e2) { setStudentMsg('Error saving.'); return; }
-    setStudents(prev => prev.map(s => s.id === editStudent.id
-      ? { ...s, roll_number: editStudentForm.roll_number, year: editStudentForm.year, section: editStudentForm.section, profiles: { ...s.profiles, full_name: editStudentForm.full_name } }
-      : s));
-    setEditStudent(null);
-    setStudentMsg('Student updated.');
-  }
-
-  async function handleEditTeacherSave() {
-    const { error: e1 } = await supabase.from('teachers')
-      .update({ employee_code: editTeacherForm.employee_code })
-      .eq('id', editTeacher.id);
-    const { error: e2 } = await supabase.from('profiles')
-      .update({ full_name: editTeacherForm.full_name })
-      .eq('id', editTeacher.id);
-    if (e1 || e2) { setTeacherMsg('Error saving.'); return; }
-    setTeachers(prev => prev.map(t => t.id === editTeacher.id
-      ? { ...t, employee_code: editTeacherForm.employee_code, profiles: { ...t.profiles, full_name: editTeacherForm.full_name } }
-      : t));
-    setEditTeacher(null);
-    setTeacherMsg('Teacher updated.');
-  }
-
   if (loading) return <div className="ad-loading"><div className="ad-spinner" /><p>Loading...</p></div>;
   if (error) return <div className="ad-error">{error}</div>;
+
+  const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   return (
     <div className="ad-root">
@@ -342,7 +366,7 @@ export default function AdminDashboard() {
         <div className="ad-header-center"><span className="ad-role-badge">ADMIN</span></div>
         <div className="ad-header-right">
           <span className="ad-name">{profile?.full_name || 'Admin'}</span>
-           <ThemeToggle />
+          <ThemeToggle />
           <button className="ad-logout" onClick={async () => { await supabase.auth.signOut(); window.location.href = '/'; }}>Logout</button>
         </div>
       </header>
@@ -381,6 +405,7 @@ export default function AdminDashboard() {
 
       <div className="ad-content">
 
+        {/* OVERVIEW */}
         {activeTab === 'overview' && (
           <div className="ad-grid-2">
             <div className="ad-panel">
@@ -422,52 +447,28 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* USERS */}
         {activeTab === 'users' && (
           <div className="ad-grid-2">
             <div className="ad-panel">
               <div className="ad-panel-header">
                 <h2>Students</h2>
-                <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <span className="ad-badge">{students.length} total</span>
-                  <button style={{padding:'4px 14px',fontSize:12,background:'#e84040',color:'#fff',border:'none',borderRadius:6,cursor:'pointer'}} onClick={()=>setShowAddStudent(s=>!s)}>
-                    {showAddStudent ? '✕ Cancel' : '+ Add'}
+                  <button style={{ padding: '4px 14px', fontSize: 12, background: '#e84040', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }} onClick={() => setShowAddStudent(s => !s)}>
+                    {showAddStudent ? 'Cancel' : '+ Add'}
                   </button>
                 </div>
               </div>
               {showAddStudent && (
-                <div className="ad-form" style={{marginBottom:12}}>
-                  <div className="ad-form-group">
-                    <label>Full Name *</label>
-                    <input placeholder="e.g. Arjun Kumar" value={newStudentName} onChange={e=>setNewStudentName(e.target.value)} />
-                  </div>
-                  <div className="ad-form-group">
-                    <label>Email</label>
-                    <input placeholder="auto-generated if empty" value={newStudentEmail} onChange={e=>setNewStudentEmail(e.target.value)} />
-                  </div>
-                  <div className="ad-form-group">
-                    <label>Roll Number *</label>
-                    <input placeholder="e.g. BCA2024007" value={newStudentRoll} onChange={e=>setNewStudentRoll(e.target.value)} />
-                  </div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8}}>
-                    <div className="ad-form-group">
-                      <label>Year</label>
-                      <select value={newStudentYear} onChange={e=>setNewStudentYear(e.target.value)}>
-                        {['1','2','3'].map(y=><option key={y}>{y}</option>)}
-                      </select>
-                    </div>
-                    <div className="ad-form-group">
-                      <label>Section</label>
-                      <select value={newStudentSection} onChange={e=>setNewStudentSection(e.target.value)}>
-                        {['A','B','C'].map(s=><option key={s}>{s}</option>)}
-                      </select>
-                    </div>
-                    <div className="ad-form-group">
-                      <label>Department *</label>
-                      <select value={newStudentDept} onChange={e=>setNewStudentDept(e.target.value)}>
-                        <option value="">Select</option>
-                        {departments.map(d=><option key={d.id} value={d.id}>{d.name}</option>)}
-                      </select>
-                    </div>
+                <div className="ad-form" style={{ marginBottom: 12 }}>
+                  <div className="ad-form-group"><label>Full Name *</label><input placeholder="e.g. Arjun Kumar" value={newStudentName} onChange={e => setNewStudentName(e.target.value)} /></div>
+                  <div className="ad-form-group"><label>Email</label><input placeholder="auto-generated if empty" value={newStudentEmail} onChange={e => setNewStudentEmail(e.target.value)} /></div>
+                  <div className="ad-form-group"><label>Roll Number *</label><input placeholder="e.g. BCA2024007" value={newStudentRoll} onChange={e => setNewStudentRoll(e.target.value)} /></div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                    <div className="ad-form-group"><label>Year</label><select value={newStudentYear} onChange={e => setNewStudentYear(e.target.value)}>{['1', '2', '3'].map(y => <option key={y}>{y}</option>)}</select></div>
+                    <div className="ad-form-group"><label>Section</label><select value={newStudentSection} onChange={e => setNewStudentSection(e.target.value)}>{['A', 'B', 'C'].map(s => <option key={s}>{s}</option>)}</select></div>
+                    <div className="ad-form-group"><label>Department *</label><select value={newStudentDept} onChange={e => setNewStudentDept(e.target.value)}><option value="">Select</option>{departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
                   </div>
                   <div className="ad-form-footer">
                     {studentMsg && <span className="ad-msg">{studentMsg}</span>}
@@ -476,23 +477,18 @@ export default function AdminDashboard() {
                 </div>
               )}
               <table className="ad-table">
-                <thead>
-                  <tr><th>Roll No</th><th>Name</th><th>Dept</th><th>Year</th><th></th></tr>
-                </thead>
+                <thead><tr><th>Roll No</th><th>Name</th><th>Dept</th><th>Year</th><th>Action</th></tr></thead>
                 <tbody>
                   {students.map(s => (
                     <tr key={s.id}>
                       {editStudent?.id === s.id ? (
                         <>
                           <td><input className="td-marks-input" value={editStudentForm.roll_number} onChange={e => setEditStudentForm(f => ({ ...f, roll_number: e.target.value }))} style={{ width: 110 }} /></td>
-                          <td><input className="td-marks-input" value={editStudentForm.full_name} onChange={e => setEditStudentForm(f => ({ ...f, full_name: e.target.value }))} style={{ width: 130 }} /></td>
+                          <td><input className="td-marks-input" value={editStudentForm.full_name} onChange={e => setEditStudentForm(f => ({ ...f, full_name: e.target.value }))} style={{ width: 120 }} /></td>
                           <td className="ad-muted">{s.departments?.name || '—'}</td>
                           <td>
-                            <select className="td-marks-input" value={editStudentForm.year} onChange={e => setEditStudentForm(f => ({ ...f, year: e.target.value }))} style={{ width: 55 }}>
+                            <select className="td-marks-input" value={editStudentForm.year} onChange={e => setEditStudentForm(f => ({ ...f, year: e.target.value }))} style={{ width: 50 }}>
                               <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-                            </select>
-                            <select className="td-marks-input" value={editStudentForm.section} onChange={e => setEditStudentForm(f => ({ ...f, section: e.target.value }))} style={{ width: 50, marginLeft: 4 }}>
-                              <option>A</option><option>B</option><option>C</option>
                             </select>
                           </td>
                           <td style={{ display: 'flex', gap: 6 }}>
@@ -524,35 +520,20 @@ export default function AdminDashboard() {
             <div className="ad-panel">
               <div className="ad-panel-header">
                 <h2>Teachers</h2>
-                <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <span className="ad-badge">{teachers.length} total</span>
-                  <button style={{padding:'4px 14px',fontSize:12,background:'#e84040',color:'#fff',border:'none',borderRadius:6,cursor:'pointer'}} onClick={()=>setShowAddTeacher(s=>!s)}>
-                    {showAddTeacher ? '✕ Cancel' : '+ Add'}
+                  <button style={{ padding: '4px 14px', fontSize: 12, background: '#e84040', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }} onClick={() => setShowAddTeacher(s => !s)}>
+                    {showAddTeacher ? 'Cancel' : '+ Add'}
                   </button>
                 </div>
               </div>
               {showAddTeacher && (
-                <div className="ad-form" style={{marginBottom:12}}>
-                  <div className="ad-form-group">
-                    <label>Full Name *</label>
-                    <input placeholder="e.g. Dr. Ravi Kumar" value={newTeacherName} onChange={e=>setNewTeacherName(e.target.value)} />
-                  </div>
-                  <div className="ad-form-group">
-                    <label>Email</label>
-                    <input placeholder="auto-generated if empty" value={newTeacherEmail} onChange={e=>setNewTeacherEmail(e.target.value)} />
-                  </div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-                    <div className="ad-form-group">
-                      <label>Employee Code *</label>
-                      <input placeholder="e.g. TC004" value={newTeacherEmpCode} onChange={e=>setNewTeacherEmpCode(e.target.value)} />
-                    </div>
-                    <div className="ad-form-group">
-                      <label>Department *</label>
-                      <select value={newTeacherDept} onChange={e=>setNewTeacherDept(e.target.value)}>
-                        <option value="">Select</option>
-                        {departments.map(d=><option key={d.id} value={d.id}>{d.name}</option>)}
-                      </select>
-                    </div>
+                <div className="ad-form" style={{ marginBottom: 12 }}>
+                  <div className="ad-form-group"><label>Full Name *</label><input placeholder="e.g. Dr. Ravi Kumar" value={newTeacherName} onChange={e => setNewTeacherName(e.target.value)} /></div>
+                  <div className="ad-form-group"><label>Email</label><input placeholder="auto-generated if empty" value={newTeacherEmail} onChange={e => setNewTeacherEmail(e.target.value)} /></div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <div className="ad-form-group"><label>Employee Code *</label><input placeholder="e.g. TC004" value={newTeacherEmpCode} onChange={e => setNewTeacherEmpCode(e.target.value)} /></div>
+                    <div className="ad-form-group"><label>Department *</label><select value={newTeacherDept} onChange={e => setNewTeacherDept(e.target.value)}><option value="">Select</option>{departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
                   </div>
                   <div className="ad-form-footer">
                     {teacherMsg && <span className="ad-msg">{teacherMsg}</span>}
@@ -561,16 +542,14 @@ export default function AdminDashboard() {
                 </div>
               )}
               <table className="ad-table">
-                <thead>
-                  <tr><th>Emp Code</th><th>Name</th><th>Email</th><th>Dept</th><th></th></tr>
-                </thead>
+                <thead><tr><th>Emp Code</th><th>Name</th><th>Email</th><th>Dept</th><th>Action</th></tr></thead>
                 <tbody>
                   {teachers.map(t => (
                     <tr key={t.id}>
                       {editTeacher?.id === t.id ? (
                         <>
-                          <td><input className="td-marks-input" value={editTeacherForm.employee_code} onChange={e => setEditTeacherForm(f => ({ ...f, employee_code: e.target.value }))} style={{ width: 90 }} /></td>
-                          <td><input className="td-marks-input" value={editTeacherForm.full_name} onChange={e => setEditTeacherForm(f => ({ ...f, full_name: e.target.value }))} style={{ width: 140 }} /></td>
+                          <td><input className="td-marks-input" value={editTeacherForm.employee_code} onChange={e => setEditTeacherForm(f => ({ ...f, employee_code: e.target.value }))} style={{ width: 80 }} /></td>
+                          <td><input className="td-marks-input" value={editTeacherForm.full_name} onChange={e => setEditTeacherForm(f => ({ ...f, full_name: e.target.value }))} style={{ width: 130 }} /></td>
                           <td className="ad-muted">{t.profiles?.email || '—'}</td>
                           <td className="ad-muted">{t.departments?.name || '—'}</td>
                           <td style={{ display: 'flex', gap: 6 }}>
@@ -601,18 +580,15 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* DEPARTMENTS */}
         {activeTab === 'departments' && (
           <div className="ad-grid-2">
             <div className="ad-panel">
-              <div className="ad-panel-header">
-                <h2>Departments</h2>
-                <span className="ad-badge">{departments.length} total</span>
-              </div>
+              <div className="ad-panel-header"><h2>Departments</h2><span className="ad-badge">{departments.length} total</span></div>
               <div className="ad-dept-list">
                 {departments.map(d => (
                   <div key={d.id} className="ad-dept-row">
                     <div className="ad-dept-info">
-                      <span className="ad-dept-icon">🏫</span>
                       <span className="ad-dept-name">{d.name}</span>
                     </div>
                     <button className="ad-btn-delete" onClick={() => deleteDepartment(d.id)}>✕</button>
@@ -624,34 +600,24 @@ export default function AdminDashboard() {
             <div className="ad-panel">
               <div className="ad-panel-header"><h2>Add Department</h2></div>
               <div className="ad-form">
-                <div className="ad-form-group">
-                  <label>Department Name</label>
-                  <input type="text" placeholder="e.g. Information Technology" value={deptName} onChange={e => setDeptName(e.target.value)} />
-                </div>
+                <div className="ad-form-group"><label>Department Name</label><input type="text" placeholder="e.g. Information Technology" value={deptName} onChange={e => setDeptName(e.target.value)} /></div>
                 <div className="ad-form-footer">
                   {deptMsg && <span className="ad-msg">{deptMsg}</span>}
-                  <button className="ad-btn-save" onClick={createDepartment} disabled={deptSaving}>
-                    {deptSaving ? 'Creating...' : '+ Create Department'}
-                  </button>
+                  <button className="ad-btn-save" onClick={createDepartment} disabled={deptSaving}>{deptSaving ? 'Creating...' : '+ Create Department'}</button>
                 </div>
               </div>
             </div>
           </div>
         )}
 
+        {/* ANNOUNCEMENTS */}
         {activeTab === 'announcements' && (
           <div className="ad-grid-2">
             <div className="ad-panel">
               <div className="ad-panel-header"><h2>New Announcement</h2></div>
               <div className="ad-form">
-                <div className="ad-form-group">
-                  <label>Title</label>
-                  <input type="text" placeholder="Announcement title" value={annTitle} onChange={e => setAnnTitle(e.target.value)} />
-                </div>
-                <div className="ad-form-group">
-                  <label>Message</label>
-                  <textarea rows={4} placeholder="Write your message..." value={annBody} onChange={e => setAnnBody(e.target.value)} />
-                </div>
+                <div className="ad-form-group"><label>Title</label><input type="text" placeholder="Announcement title" value={annTitle} onChange={e => setAnnTitle(e.target.value)} /></div>
+                <div className="ad-form-group"><label>Message</label><textarea rows={4} placeholder="Write your message..." value={annBody} onChange={e => setAnnBody(e.target.value)} /></div>
                 <div className="ad-form-group">
                   <label>Target Audience</label>
                   <select value={annTarget} onChange={e => setAnnTarget(e.target.value)}>
@@ -662,17 +628,12 @@ export default function AdminDashboard() {
                 </div>
                 <div className="ad-form-footer">
                   {annMsg && <span className="ad-msg">{annMsg}</span>}
-                  <button className="ad-btn-save" onClick={createAnnouncement} disabled={annSaving}>
-                    {annSaving ? 'Posting...' : 'Post Announcement'}
-                  </button>
+                  <button className="ad-btn-save" onClick={createAnnouncement} disabled={annSaving}>{annSaving ? 'Posting...' : 'Post Announcement'}</button>
                 </div>
               </div>
             </div>
             <div className="ad-panel">
-              <div className="ad-panel-header">
-                <h2>All Announcements</h2>
-                <span className="ad-badge">{announcements.length}</span>
-              </div>
+              <div className="ad-panel-header"><h2>All Announcements</h2><span className="ad-badge">{announcements.length}</span></div>
               <div className="ad-ann-list">
                 {announcements.map(a => (
                   <div key={a.id} className="ad-ann-item">
@@ -690,6 +651,248 @@ export default function AdminDashboard() {
                 {announcements.length === 0 && <p className="ad-empty">No announcements yet.</p>}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* LEAVE APPROVAL */}
+        {activeTab === 'leave' && (
+          <div className="ad-panel">
+            <div className="ad-panel-header">
+              <h2>Leave Approval</h2>
+              <span className="ad-badge">{leaveRequests.length} requests</span>
+            </div>
+            {leaveRequests.length === 0 ? <p className="ad-empty">No leave requests.</p> : (
+              <table className="ad-table">
+                <thead>
+                  <tr><th>Teacher</th><th>Type</th><th>From</th><th>To</th><th>Reason</th><th>Status</th><th>Remark</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                  {leaveRequests.map(l => (
+                    <tr key={l.id}>
+                      <td>{l.profiles?.full_name || '—'}</td>
+                      <td>{l.leave_type}</td>
+                      <td>{l.from_date}</td>
+                      <td>{l.to_date}</td>
+                      <td className="ad-muted">{l.reason}</td>
+                      <td>
+                        <span style={{
+                          padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600,
+                          background: l.status === 'Approved' ? 'rgba(39,174,96,0.15)' : l.status === 'Rejected' ? 'rgba(231,76,60,0.15)' : 'rgba(241,196,15,0.15)',
+                          color: l.status === 'Approved' ? '#27ae60' : l.status === 'Rejected' ? '#e74c3c' : '#f1c40f'
+                        }}>{l.status}</span>
+                      </td>
+                      <td>
+                        <input className="td-marks-input" placeholder="Add remark..." defaultValue={l.admin_remark || ''}
+                          onBlur={async e => { await supabase.from('leave_requests').update({ admin_remark: e.target.value }).eq('id', l.id); }}
+                          style={{ width: 140 }} />
+                      </td>
+                      <td style={{ display: 'flex', gap: 6 }}>
+                        {l.status === 'Pending' && (
+                          <>
+                            <button onClick={() => updateLeaveStatus(l.id, 'Approved', l.admin_remark)}
+                              style={{ background: 'rgba(39,174,96,0.15)', color: '#27ae60', border: '1px solid #27ae60', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Approve</button>
+                            <button onClick={() => updateLeaveStatus(l.id, 'Rejected', l.admin_remark)}
+                              style={{ background: 'rgba(231,76,60,0.15)', color: '#e74c3c', border: '1px solid #e74c3c', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Reject</button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
+        {/* PAYROLL */}
+        {activeTab === 'payroll' && (
+          <div className="ad-panel">
+            <div className="ad-panel-header">
+              <h2>Staff Payroll</h2>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <span className="ad-badge">{payrolls.length} records</span>
+                <button style={{ padding: '4px 14px', fontSize: 12, background: '#e84040', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }} onClick={() => setShowAddPayroll(p => !p)}>
+                  {showAddPayroll ? 'Cancel' : '+ Add'}
+                </button>
+              </div>
+            </div>
+            {showAddPayroll && (
+              <div className="ad-form" style={{ marginBottom: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div className="ad-form-group">
+                    <label>Teacher *</label>
+                    <select value={newPayroll.teacher_id} onChange={e => setNewPayroll(p => ({ ...p, teacher_id: e.target.value }))}>
+                      <option value="">Select Teacher</option>
+                      {teachers.map(t => <option key={t.id} value={t.id}>{t.profiles?.full_name}</option>)}
+                    </select>
+                  </div>
+                  <div className="ad-form-group"><label>Month *</label><input placeholder="e.g. April 2026" value={newPayroll.month} onChange={e => setNewPayroll(p => ({ ...p, month: e.target.value }))} /></div>
+                  <div className="ad-form-group"><label>Basic Pay *</label><input type="number" placeholder="e.g. 55000" value={newPayroll.basic_pay} onChange={e => setNewPayroll(p => ({ ...p, basic_pay: e.target.value }))} /></div>
+                  <div className="ad-form-group"><label>Allowances</label><input type="number" placeholder="e.g. 22000" value={newPayroll.allowances} onChange={e => setNewPayroll(p => ({ ...p, allowances: e.target.value }))} /></div>
+                  <div className="ad-form-group"><label>Deductions</label><input type="number" placeholder="e.g. 11600" value={newPayroll.deductions} onChange={e => setNewPayroll(p => ({ ...p, deductions: e.target.value }))} /></div>
+                  <div className="ad-form-group" style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 20 }}>
+                    <input type="checkbox" id="paidCheck" checked={newPayroll.paid} onChange={e => setNewPayroll(p => ({ ...p, paid: e.target.checked }))} />
+                    <label htmlFor="paidCheck" style={{ color: 'var(--text)' }}>Mark as Paid</label>
+                  </div>
+                </div>
+                <div className="ad-form-footer">
+                  {payrollMsg && <span className="ad-msg">{payrollMsg}</span>}
+                  <button className="ad-btn-save" onClick={addPayroll}>+ Add Payroll</button>
+                </div>
+              </div>
+            )}
+            <table className="ad-table">
+              <thead><tr><th>Teacher</th><th>Month</th><th>Basic Pay</th><th>Allowances</th><th>Deductions</th><th>Net Pay</th><th>Status</th></tr></thead>
+              <tbody>
+                {payrolls.map(p => (
+                  <tr key={p.id}>
+                    <td>{p.profiles?.full_name || '—'}</td>
+                    <td>{p.month}</td>
+                    <td>Rs. {p.basic_pay?.toLocaleString('en-IN')}</td>
+                    <td>Rs. {p.allowances?.toLocaleString('en-IN')}</td>
+                    <td>Rs. {p.deductions?.toLocaleString('en-IN')}</td>
+                    <td>Rs. {p.net_pay?.toLocaleString('en-IN')}</td>
+                    <td>
+                      <span style={{ padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: p.paid ? 'rgba(39,174,96,0.15)' : 'rgba(241,196,15,0.15)', color: p.paid ? '#27ae60' : '#f1c40f' }}>
+                        {p.paid ? 'Paid' : 'Pending'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+                {payrolls.length === 0 && <tr><td colSpan={7} className="ad-empty">No payroll records.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* FEES */}
+        {activeTab === 'fees' && (
+          <div className="ad-panel">
+            <div className="ad-panel-header">
+              <h2>Fees Management</h2>
+              <span className="ad-badge">{fees.length} records</span>
+            </div>
+            <table className="ad-table">
+              <thead><tr><th>Student</th><th>Fee Type</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody>
+                {fees.map(f => (
+                  <tr key={f.id}>
+                    <td>{f.profiles?.full_name || '—'}</td>
+                    <td>{f.fee_type}</td>
+                    <td>Rs. {f.amount?.toLocaleString('en-IN')}</td>
+                    <td>{f.due_date}</td>
+                    <td>
+                      <span style={{ padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: f.paid ? 'rgba(39,174,96,0.15)' : 'rgba(231,76,60,0.15)', color: f.paid ? '#27ae60' : '#e74c3c' }}>
+                        {f.paid ? 'Paid' : 'Unpaid'}
+                      </span>
+                    </td>
+                    <td>
+                      <button onClick={() => toggleFee(f.id, f.paid)}
+                        style={{ background: f.paid ? 'rgba(231,76,60,0.15)' : 'rgba(39,174,96,0.15)', color: f.paid ? '#e74c3c' : '#27ae60', border: `1px solid ${f.paid ? '#e74c3c' : '#27ae60'}`, borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>
+                        {f.paid ? 'Mark Unpaid' : 'Mark Paid'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {fees.length === 0 && <tr><td colSpan={6} className="ad-empty">No fee records.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* TIMETABLE */}
+        {activeTab === 'timetable' && (
+          <div className="ad-panel">
+            <div className="ad-panel-header">
+              <h2>Timetable</h2>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <span className="ad-badge">{timetable.length} slots</span>
+                <button style={{ padding: '4px 14px', fontSize: 12, background: '#e84040', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }} onClick={() => setShowAddSlot(s => !s)}>
+                  {showAddSlot ? 'Cancel' : '+ Add Slot'}
+                </button>
+              </div>
+            </div>
+            {showAddSlot && (
+              <div className="ad-form" style={{ marginBottom: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10 }}>
+                  <div className="ad-form-group">
+                    <label>Subject *</label>
+                    <select value={newSlot.subject_id} onChange={e => setNewSlot(s => ({ ...s, subject_id: e.target.value }))}>
+                      <option value="">Select Subject</option>
+                      {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="ad-form-group">
+                    <label>Day *</label>
+                    <select value={newSlot.day} onChange={e => setNewSlot(s => ({ ...s, day: e.target.value }))}>
+                      {DAYS.map(d => <option key={d}>{d}</option>)}
+                    </select>
+                  </div>
+                  <div className="ad-form-group"><label>Start Time *</label><input type="time" value={newSlot.start_time} onChange={e => setNewSlot(s => ({ ...s, start_time: e.target.value }))} /></div>
+                  <div className="ad-form-group"><label>End Time *</label><input type="time" value={newSlot.end_time} onChange={e => setNewSlot(s => ({ ...s, end_time: e.target.value }))} /></div>
+                </div>
+                <div className="ad-form-footer">
+                  {ttMsg && <span className="ad-msg">{ttMsg}</span>}
+                  <button className="ad-btn-save" onClick={addTimetableSlot}>+ Add Slot</button>
+                </div>
+              </div>
+            )}
+            <table className="ad-table">
+              <thead><tr><th>Day</th><th>Subject</th><th>Start</th><th>End</th><th>Action</th></tr></thead>
+              <tbody>
+                {timetable.map(t => (
+                  <tr key={t.id}>
+                    <td>{t.day}</td>
+                    <td>{t.subjects?.name || '—'}</td>
+                    <td>{t.start_time?.slice(0, 5)}</td>
+                    <td>{t.end_time?.slice(0, 5)}</td>
+                    <td>
+                      <button onClick={() => deleteTimetableSlot(t.id)}
+                        style={{ background: 'rgba(231,76,60,0.15)', color: '#e74c3c', border: '1px solid #e74c3c', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+                {timetable.length === 0 && <tr><td colSpan={5} className="ad-empty">No timetable slots.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* HALL TICKETS */}
+        {activeTab === 'halltickets' && (
+          <div className="ad-panel">
+            <div className="ad-panel-header">
+              <h2>Hall Tickets</h2>
+              <span className="ad-badge">{exams.length} exams</span>
+            </div>
+            <div className="ad-form-group" style={{ marginBottom: 16, maxWidth: 360 }}>
+              <label style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 6, display: 'block' }}>Select Exam</label>
+              <select value={selectedExam} onChange={e => { setSelectedExam(e.target.value); if (e.target.value) loadHallTickets(e.target.value); }}>
+                <option value="">Select an exam...</option>
+                {exams.map(e => <option key={e.id} value={e.id}>{e.title} — {e.exam_date} ({e.subjects?.name})</option>)}
+              </select>
+            </div>
+            {selectedExam && (
+              <table className="ad-table">
+                <thead><tr><th>Roll No</th><th>Student</th><th>Hall</th><th>Seat No</th><th>Status</th></tr></thead>
+                <tbody>
+                  {hallTickets.map(h => (
+                    <tr key={h.id}>
+                      <td><span className="ad-roll">{h.students?.roll_number || '—'}</span></td>
+                      <td>{h.profiles?.full_name || '—'}</td>
+                      <td>{h.hall_number}</td>
+                      <td>{h.seat_number}</td>
+                      <td>
+                        <span style={{ padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: h.issued ? 'rgba(39,174,96,0.15)' : 'rgba(241,196,15,0.15)', color: h.issued ? '#27ae60' : '#f1c40f' }}>
+                          {h.issued ? 'Issued' : 'Pending'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                  {hallTickets.length === 0 && <tr><td colSpan={5} className="ad-empty">No hall tickets for this exam.</td></tr>}
+                </tbody>
+              </table>
+            )}
           </div>
         )}
 
