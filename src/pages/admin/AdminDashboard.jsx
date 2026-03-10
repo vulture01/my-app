@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { supabase } from '../../supabaseClient';
 import './AdminDashboard.css';
 import { ThemeToggle } from '../../context/ThemeContext';
@@ -156,6 +157,7 @@ export default function AdminDashboard() {
   const [exams, setExams] = useState([]);
   const [hallTickets, setHallTickets] = useState([]);
   const [selectedExam, setSelectedExam] = useState('');
+  const [attendanceChart, setAttendanceChart] = useState([]);
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -197,6 +199,17 @@ export default function AdminDashboard() {
       setFees(feesData || []);
       setTimetable(tt || []);
       setExams(examsData || []);
+
+      const { data: attRaw } = await supabase.from('attendance').select('status, subjects(name)');
+      if (attRaw) {
+        const grouped = {};
+        attRaw.forEach(row => {
+          const name = row.subjects?.name || 'Unknown';
+          if (!grouped[name]) grouped[name] = { name, present: 0, absent: 0 };
+          row.status === 'present' ? grouped[name].present++ : grouped[name].absent++;
+        });
+        setAttendanceChart(Object.values(grouped));
+      }
     } catch (e) {
       setError(e.message);
     } finally {
@@ -407,6 +420,7 @@ export default function AdminDashboard() {
 
         {/* OVERVIEW */}
         {activeTab === 'overview' && (
+          <div>
           <div className="ad-grid-2">
             <div className="ad-panel">
               <div className="ad-panel-header">
@@ -444,6 +458,42 @@ export default function AdminDashboard() {
                 {subjects.length === 0 && <p className="ad-empty">No subjects.</p>}
               </div>
             </div>
+          </div>
+
+          <div className="ad-grid-2" style={{ marginTop: 24 }}>
+            <div className="ad-panel">
+              <div className="ad-panel-header"><h2>Attendance by Subject</h2></div>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={attendanceChart} margin={{ top: 10, right: 10, left: -20, bottom: 50 }}>
+                  <XAxis dataKey="name" tick={{ fill: '#aaa', fontSize: 11 }} angle={-30} textAnchor="end" interval={0} />
+                  <YAxis tick={{ fill: '#aaa', fontSize: 11 }} />
+                  <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid #2a2a3e', color: '#fff' }} />
+                  <Bar dataKey="present" fill="#27ae60" radius={[4,4,0,0]} name="Present" />
+                  <Bar dataKey="absent" fill="#e84040" radius={[4,4,0,0]} name="Absent" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="ad-panel">
+              <div className="ad-panel-header"><h2>Fees Overview</h2></div>
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Paid', value: fees.filter(f => f.paid).length },
+                      { name: 'Unpaid', value: fees.filter(f => !f.paid).length }
+                    ]}
+                    cx="50%" cy="50%" innerRadius={60} outerRadius={90}
+                    dataKey="value" paddingAngle={4}
+                  >
+                    <Cell fill="#27ae60" />
+                    <Cell fill="#e84040" />
+                  </Pie>
+                  <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid #2a2a3e', color: '#fff' }} />
+                  <Legend formatter={(v) => <span style={{ color: '#aaa', fontSize: 13 }}>{v}</span>} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
           </div>
         )}
 
