@@ -41,7 +41,7 @@ function AIChatBuddy({ teacherName }) {
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',
           messages: [
-            { role: 'system', content: 'You are a helpful assistant for a college teacher using EduSync. Help with lesson planning, attendance analysis, student performance, and academic queries. Be concise and professional.' },
+            { role: 'system', content: 'You are a helpful assistant for a college teacher using Studyology. Help with lesson planning, attendance analysis, student performance, and academic queries. Be concise and professional.' },
             ...messages, userMsg
           ],
           max_tokens: 300

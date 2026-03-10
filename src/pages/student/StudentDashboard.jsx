@@ -206,7 +206,7 @@ function AIChatBuddy({ studentName, department, year }) {
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',
           messages: [
-            { role: 'system', content: `You are a helpful academic assistant for a ${department} student in Year ${year}. Keep responses concise and helpful.` },
+            { role: 'system', content: `You are a helpful academic assistant for a ${department} student in Year ${year} at Studyology. Keep responses concise and helpful. Always refer to the platform as Studyology.` },
             ...messages,
             userMsg
           ],
