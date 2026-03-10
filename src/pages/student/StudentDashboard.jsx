@@ -85,6 +85,103 @@ function buildAISummary(attendance, marks) {
   return { summary, tags };
 }
 
+// ── COURSE LOG MODAL ──────────────────────────────────────────────────────────
+function CourseLogModal({ subject, subjectId, onClose }) {
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase
+        .from('course_logs')
+        .select('id, topic, description, taught_on')
+        .eq('subject_id', subjectId)
+        .order('taught_on', { ascending: false });
+      setLogs(data || []);
+      setLoading(false);
+    }
+    load();
+  }, [subjectId]);
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 2000,
+        background: 'rgba(0,0,0,0.6)', display: 'flex',
+        alignItems: 'center', justifyContent: 'center', padding: 16
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: 'var(--card-bg)', borderRadius: 16, border: '1px solid var(--border)',
+          width: '100%', maxWidth: 560, maxHeight: '80vh',
+          display: 'flex', flexDirection: 'column',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.4)'
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Modal Header */}
+        <div style={{ padding: '18px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ color: 'var(--text)', fontWeight: 700, fontSize: 16 }}>{subject}</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 2 }}>Course Log — What was taught</div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{ background: 'var(--card-bg-2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-muted)', cursor: 'pointer', padding: '6px 14px', fontSize: 13 }}
+          >
+            Close
+          </button>
+        </div>
+
+        {/* Timeline */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
+          {loading ? (
+            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Loading...</p>
+          ) : logs.length === 0 ? (
+            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No course logs available for this subject yet.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {logs.map((log, i) => (
+                <div key={log.id} style={{ display: 'flex', gap: 16 }}>
+                  {/* dot + line */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 20 }}>
+                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#e84040', border: '2px solid var(--border)', marginTop: 4, flexShrink: 0 }} />
+                    {i < logs.length - 1 && (
+                      <div style={{ width: 2, flex: 1, background: 'var(--border)', minHeight: 32 }} />
+                    )}
+                  </div>
+                  {/* content */}
+                  <div style={{ flex: 1, paddingBottom: 20 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                      <div style={{ color: 'var(--text)', fontWeight: 600, fontSize: 14 }}>{log.topic}</div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: 11, whiteSpace: 'nowrap', marginLeft: 10 }}>
+                        {new Date(log.taught_on).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </div>
+                    </div>
+                    {log.description && (
+                      <div style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.5, background: 'var(--card-bg-2)', borderRadius: 8, padding: '8px 12px', border: '1px solid var(--border)' }}>
+                        {log.description}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '12px 20px', borderTop: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: 12 }}>
+          {logs.length} session(s) logged · Read only view
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── AI CHAT BUDDY ─────────────────────────────────────────────────────────────
 function AIChatBuddy({ studentName, department, year }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -148,9 +245,9 @@ function AIChatBuddy({ studentName, department, year }) {
           <div style={{ padding: '14px 16px', background: 'linear-gradient(135deg, #e84040, #ff6b35)', display: 'flex', alignItems: 'center', gap: 10 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 20 }}>🤖</span>
-              <div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>AI Study Buddy</div>
-            </div>
+                <span style={{ fontSize: 20 }}>🤖</span>
+                <div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>AI Study Buddy</div>
+              </div>
               <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11 }}>Always here to help</div>
             </div>
           </div>
@@ -195,6 +292,7 @@ function AIChatBuddy({ studentName, department, year }) {
   );
 }
 
+// ── MAIN DASHBOARD ────────────────────────────────────────────────────────────
 export default function StudentDashboard() {
   const [student, setStudent] = useState(null);
   const [studentDetails, setStudentDetails] = useState(null);
@@ -204,6 +302,10 @@ export default function StudentDashboard() {
   const [announcements, setAnnouncements] = useState([]);
   const [arrears, setArrears] = useState([]);
   const [absents, setAbsents] = useState([]);
+  const [hallTickets, setHallTickets] = useState([]);
+  const [subjectIdMap, setSubjectIdMap] = useState({});
+  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const [activeDay, setActiveDay] = useState(() => {
     const day = new Date().getDay();
     return day === 0 || day === 6 ? 0 : day - 1;
@@ -241,12 +343,15 @@ export default function StudentDashboard() {
         if (attErr) throw attErr;
 
         const attMap = {};
+        const idMap = {};
         (attData || []).forEach(row => {
           const name = row.subjects?.name || row.subject_id;
           if (!attMap[name]) attMap[name] = { subject: name, present: 0, total: 0 };
           attMap[name].total += 1;
           if (row.status === 'present') attMap[name].present += 1;
+          idMap[name] = row.subject_id;
         });
+        setSubjectIdMap(idMap);
         setAttendance(Object.values(attMap).map(a => ({
           subject: a.subject,
           present_classes: a.present,
@@ -285,12 +390,18 @@ export default function StudentDashboard() {
         if (annErr) throw annErr;
         setAnnouncements(annData || []);
 
-        // Arrears — only uncleared
         const { data: arrData } = await supabase
           .from('arrears')
           .select('subject_id, subjects(name), exam_type, cleared')
           .eq('student_id', user.id);
         setArrears((arrData || []).filter(a => !a.cleared));
+
+        // Hall tickets
+        const { data: htData } = await supabase
+          .from('hall_tickets')
+          .select('id, seat_number, hall_number, issued, exams(title, exam_type, exam_date, start_time, end_time, hall, subjects(name))')
+          .eq('student_id', user.id);
+        setHallTickets(htData || []);
 
         // Absent dates
         const { data: absData } = await supabase
@@ -357,6 +468,15 @@ export default function StudentDashboard() {
 
   return (
     <div className="edu-dashboard">
+
+      {/* Course Log Modal */}
+      {selectedSubject && (
+        <CourseLogModal
+          subject={selectedSubject}
+          subjectId={selectedSubjectId}
+          onClose={() => { setSelectedSubject(null); setSelectedSubjectId(null); }}
+        />
+      )}
 
       <header className="dash-header">
         <div className="dash-header-left">
@@ -436,6 +556,7 @@ export default function StudentDashboard() {
 
       <div className="dash-grid">
 
+        {/* ATTENDANCE + COURSE LOG */}
         <div className="card attendance-card">
           <div className="card-header">
             <h2 className="card-title">Attendance</h2>
@@ -444,24 +565,42 @@ export default function StudentDashboard() {
           {attendance.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No attendance data yet.</p>
           ) : (
-            <div className="attendance-list">
-              {attendance.map((a, i) => {
-                const cls = getAttClass(a.percentage);
-                return (
-                  <div className="att-row" key={i}>
-                    <div className="att-subject" title={a.subject}>{a.subject}</div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: 11 }}>{a.present_classes}/{a.total_classes}</div>
-                    <div className={`att-pct ${cls}`}>{a.percentage}%</div>
-                    <div className="att-bar-track">
-                      <div className={`att-bar-fill ${cls}`} style={{ width: `${a.percentage}%` }} />
+            <>
+              <div className="attendance-list">
+                {attendance.map((a, i) => {
+                  const cls = getAttClass(a.percentage);
+                  return (
+                    <div className="att-row" key={i}>
+                      <div
+                        className="att-subject"
+                        title="Click to view course log"
+                        onClick={() => { setSelectedSubject(a.subject); setSelectedSubjectId(subjectIdMap[a.subject]); }}
+                        style={{ cursor: 'pointer', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
+                      >
+                        {a.subject}
+                      </div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: 11 }}>{a.present_classes}/{a.total_classes}</div>
+                      <div className={`att-pct ${cls}`}>{a.percentage}%</div>
+                      <div className="att-bar-track">
+                        <div className={`att-bar-fill ${cls}`} style={{ width: `${a.percentage}%` }} />
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+
+              {/* Course Log hint */}
+              <div style={{ marginTop: 14, padding: '10px 14px', background: 'var(--card-bg-2)', borderRadius: 8, border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#e84040', flexShrink: 0 }} />
+                <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>
+                  Click any subject name to view the course log — what was taught each session
+                </span>
+              </div>
+            </>
           )}
         </div>
 
+        {/* MARKS */}
         <div className="card marks-card">
           <div className="card-header">
             <h2 className="card-title">Marks</h2>
@@ -497,6 +636,7 @@ export default function StudentDashboard() {
           )}
         </div>
 
+        {/* TIMETABLE */}
         <div className="card timetable-card">
           <div className="card-header">
             <h2 className="card-title">Timetable</h2>
@@ -529,6 +669,8 @@ export default function StudentDashboard() {
         </div>
 
         <div className="right-col">
+
+          {/* ANNOUNCEMENTS */}
           <div className="card announcements-card">
             <div className="card-header">
               <h2 className="card-title">Announcements</h2>
@@ -550,6 +692,7 @@ export default function StudentDashboard() {
             )}
           </div>
 
+          {/* AI STATUS */}
           <div className="card ai-card">
             <div className="card-header">
               <h2 className="card-title">AI Status</h2>
@@ -566,7 +709,71 @@ export default function StudentDashboard() {
             </div>
           </div>
 
-          {/* Absent Details */}
+          {/* HALL TICKETS */}
+          <div className="card">
+            <div className="card-header">
+              <h2 className="card-title">Hall Tickets</h2>
+              <span className="card-badge">{hallTickets.length} tickets</span>
+            </div>
+            {hallTickets.length === 0 ? (
+              <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No hall tickets issued yet.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {hallTickets.map((h) => (
+                  <div key={h.id} style={{ background: 'var(--card-bg-2)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px' }}>
+                    {/* Ticket top row */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                      <div>
+                        <div style={{ color: 'var(--text)', fontWeight: 700, fontSize: 14 }}>{h.exams?.title || 'Exam'}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 2 }}>{h.exams?.subjects?.name}</div>
+                      </div>
+                      <span style={{
+                        background: h.issued ? 'rgba(39,174,96,0.15)' : 'rgba(241,196,15,0.15)',
+                        color: h.issued ? '#27ae60' : '#f1c40f',
+                        borderRadius: 999, padding: '2px 10px', fontSize: 11, fontWeight: 600
+                      }}>
+                        {h.issued ? 'Issued' : 'Pending'}
+                      </span>
+                    </div>
+                    {/* Ticket grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                      <div style={{ background: 'var(--bg)', borderRadius: 6, padding: '6px 10px' }}>
+                        <div style={{ color: 'var(--text-muted)', fontSize: 10, marginBottom: 2 }}>DATE</div>
+                        <div style={{ color: 'var(--text)', fontSize: 12, fontWeight: 600 }}>
+                          {h.exams?.exam_date
+                            ? new Date(h.exams.exam_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                            : '—'}
+                        </div>
+                      </div>
+                      <div style={{ background: 'var(--bg)', borderRadius: 6, padding: '6px 10px' }}>
+                        <div style={{ color: 'var(--text-muted)', fontSize: 10, marginBottom: 2 }}>TIME</div>
+                        <div style={{ color: 'var(--text)', fontSize: 12, fontWeight: 600 }}>
+                          {h.exams?.start_time?.slice(0, 5) || '—'} – {h.exams?.end_time?.slice(0, 5) || '—'}
+                        </div>
+                      </div>
+                      <div style={{ background: 'var(--bg)', borderRadius: 6, padding: '6px 10px' }}>
+                        <div style={{ color: 'var(--text-muted)', fontSize: 10, marginBottom: 2 }}>HALL</div>
+                        <div style={{ color: 'var(--text)', fontSize: 12, fontWeight: 600 }}>
+                          {h.hall_number || h.exams?.hall || '—'}
+                        </div>
+                      </div>
+                      <div style={{ background: 'rgba(232,64,64,0.1)', border: '1px solid #e84040', borderRadius: 6, padding: '6px 10px' }}>
+                        <div style={{ color: 'var(--text-muted)', fontSize: 10, marginBottom: 2 }}>SEAT</div>
+                        <div style={{ color: '#e84040', fontSize: 14, fontWeight: 700 }}>{h.seat_number || '—'}</div>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 8 }}>
+                      <span style={{ background: 'rgba(232,64,64,0.1)', color: '#e84040', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 600 }}>
+                        {h.exams?.exam_type}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ABSENT DETAILS */}
           <div className="card">
             <div className="card-header">
               <h2 className="card-title">Absent Details</h2>
@@ -594,8 +801,8 @@ export default function StudentDashboard() {
               </div>
             )}
           </div>
-        </div>
 
+        </div>
       </div>
 
       <AIChatBuddy
