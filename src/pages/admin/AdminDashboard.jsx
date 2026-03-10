@@ -4,6 +4,23 @@ import { supabase } from '../../supabaseClient';
 import './AdminDashboard.css';
 import { ThemeToggle } from '../../context/ThemeContext';
 
+function Toast({ toast }) {
+  if (!toast) return null;
+  return (
+    <div style={{
+      position: 'fixed', top: 24, right: 24, zIndex: 9999,
+      padding: '12px 20px', borderRadius: 10, fontSize: 14, fontWeight: 600,
+      background: toast.type === 'error' ? '#e74c3c' : '#27ae60',
+      color: '#fff', boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+      animation: 'slideIn 0.3s ease',
+      display: 'flex', alignItems: 'center', gap: 10
+    }}>
+      <span>{toast.type === 'error' ? '✕' : '✓'}</span>
+      {toast.msg}
+    </div>
+  );
+}
+
 function AIChatBuddy({ adminName }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -158,6 +175,7 @@ export default function AdminDashboard() {
   const [hallTickets, setHallTickets] = useState([]);
   const [selectedExam, setSelectedExam] = useState('');
   const [attendanceChart, setAttendanceChart] = useState([]);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -232,9 +250,9 @@ export default function AdminDashboard() {
       const { error: e } = await supabase.from('announcements').insert({ title: annTitle, body: annBody, posted_by: profile.id, role_target: annTarget });
       if (e) throw e;
       setAnnTitle(''); setAnnBody(''); setAnnTarget('all');
-      setAnnMsg('Announcement posted!');
+      showToast('Announcement posted!');
       fetchAll();
-    } catch (e) { setAnnMsg('Error: ' + e.message); }
+    } catch (e) { showToast('Error: ' + e.message, 'error'); }
     finally { setAnnSaving(false); }
   }
 
@@ -252,10 +270,10 @@ export default function AdminDashboard() {
       if (e1) throw e1;
       const { error: e2 } = await supabase.from('students').insert({ id: newId, department_id: newStudentDept, year: parseInt(newStudentYear), section: newStudentSection, roll_number: newStudentRoll.trim() });
       if (e2) throw e2;
-      setStudentMsg('Student added!');
-      setNewStudentName(''); setNewStudentEmail(''); setNewStudentRoll(''); setNewStudentYear('1'); setNewStudentSection('A'); setNewStudentDept('');
+      showToast('Student added!');
+      setNewStudentName(''); setNewStudentEmail(''); setNewStudentRoll(''); setNewStudentYear('1'); setNewStudentSection('A'); setNewStudentDept(''); setStudentMsg('');\ setStudentMsg('');\
       setShowAddStudent(false); fetchAll();
-    } catch (e) { setStudentMsg('Error: ' + e.message); }
+    } catch (e) { showToast('Error: ' + e.message, 'error'); }
   }
 
   async function deleteStudent(id) {
@@ -268,9 +286,9 @@ export default function AdminDashboard() {
   async function handleEditStudentSave() {
     const { error: e1 } = await supabase.from('students').update({ roll_number: editStudentForm.roll_number, year: editStudentForm.year, section: editStudentForm.section }).eq('id', editStudent.id);
     const { error: e2 } = await supabase.from('profiles').update({ full_name: editStudentForm.full_name }).eq('id', editStudent.id);
-    if (e1 || e2) { setStudentMsg('Error saving.'); return; }
+    if (e1 || e2) { showToast('Error saving.', 'error'); return; }
     setStudents(prev => prev.map(s => s.id === editStudent.id ? { ...s, roll_number: editStudentForm.roll_number, year: editStudentForm.year, section: editStudentForm.section, profiles: { ...s.profiles, full_name: editStudentForm.full_name } } : s));
-    setEditStudent(null); setStudentMsg('Student updated.');
+    setEditStudent(null); showToast('Student updated.');
   }
 
   async function addTeacher() {
@@ -282,10 +300,10 @@ export default function AdminDashboard() {
       if (e1) throw e1;
       const { error: e2 } = await supabase.from('teachers').insert({ id: newId, department_id: newTeacherDept, employee_code: newTeacherEmpCode.trim() });
       if (e2) throw e2;
-      setTeacherMsg('Teacher added!');
+      showToast('Teacher added!');
       setNewTeacherName(''); setNewTeacherEmail(''); setNewTeacherEmpCode(''); setNewTeacherDept('');
       setShowAddTeacher(false); fetchAll();
-    } catch (e) { setTeacherMsg('Error: ' + e.message); }
+    } catch (e) { showToast('Error: ' + e.message, 'error'); }
   }
 
   async function deleteTeacher(id) {
@@ -298,9 +316,9 @@ export default function AdminDashboard() {
   async function handleEditTeacherSave() {
     const { error: e1 } = await supabase.from('teachers').update({ employee_code: editTeacherForm.employee_code }).eq('id', editTeacher.id);
     const { error: e2 } = await supabase.from('profiles').update({ full_name: editTeacherForm.full_name }).eq('id', editTeacher.id);
-    if (e1 || e2) { setTeacherMsg('Error saving.'); return; }
+    if (e1 || e2) { showToast('Error saving.', 'error'); return; }
     setTeachers(prev => prev.map(t => t.id === editTeacher.id ? { ...t, employee_code: editTeacherForm.employee_code, profiles: { ...t.profiles, full_name: editTeacherForm.full_name } } : t));
-    setEditTeacher(null); setTeacherMsg('Teacher updated.');
+    setEditTeacher(null); showToast('Teacher updated.');
   }
 
   async function createDepartment() {
@@ -309,8 +327,8 @@ export default function AdminDashboard() {
     try {
       const { error: e } = await supabase.from('departments').insert({ name: deptName });
       if (e) throw e;
-      setDeptName(''); setDeptMsg('Department created!'); fetchAll();
-    } catch (e) { setDeptMsg('Error: ' + e.message); }
+      setDeptName(''); showToast('Department created!'); fetchAll();
+    } catch (e) { showToast('Error: ' + e.message, 'error'); }
     finally { setDeptSaving(false); }
   }
 
@@ -334,8 +352,8 @@ export default function AdminDashboard() {
       deductions: Number(newPayroll.deductions || 0),
       paid: newPayroll.paid
     });
-    if (e) { setPayrollMsg('Error: ' + e.message); return; }
-    setPayrollMsg('Payroll added!');
+    if (e) { showToast('Error: ' + e.message, 'error'); return; }
+    showToast('Payroll added!');
     setNewPayroll({ teacher_id: '', month: '', basic_pay: '', allowances: '', deductions: '', paid: false });
     setShowAddPayroll(false); fetchAll();
   }
@@ -348,8 +366,8 @@ export default function AdminDashboard() {
   async function addTimetableSlot() {
     if (!newSlot.subject_id || !newSlot.start_time || !newSlot.end_time) { setTtMsg('All fields required.'); return; }
     const { error: e } = await supabase.from('timetable').insert({ subject_id: newSlot.subject_id, day: newSlot.day, start_time: newSlot.start_time, end_time: newSlot.end_time });
-    if (e) { setTtMsg('Error: ' + e.message); return; }
-    setTtMsg('Slot added!');
+    if (e) { showToast('Error: ' + e.message, 'error'); return; }
+    showToast('Slot added!');
     setNewSlot({ subject_id: '', day: 'Monday', start_time: '', end_time: '' });
     setShowAddSlot(false); fetchAll();
   }
@@ -357,6 +375,11 @@ export default function AdminDashboard() {
   async function deleteTimetableSlot(id) {
     await supabase.from('timetable').delete().eq('id', id);
     setTimetable(prev => prev.filter(t => t.id !== id));
+  }
+
+  function showToast(msg, type = 'success') {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
   }
 
   function timeAgo(ts) {
@@ -948,6 +971,8 @@ export default function AdminDashboard() {
 
       </div>
       <AIChatBuddy adminName={profile?.full_name?.split(' ')[0] || 'Admin'} />
+      <Toast toast={toast} />
+      <style>{`@keyframes slideIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }`}</style>
     </div>
   );
 }
