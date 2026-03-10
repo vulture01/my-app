@@ -684,6 +684,12 @@ export default function AdminDashboard() {
                   <div key={d.id} className="ad-dept-row">
                     <div className="ad-dept-info">
                       <span className="ad-dept-name">{d.name}</span>
+                      <span style={{ marginLeft: 10, fontSize: 12, background: '#4f46e520', color: '#818cf8', border: '1px solid #4f46e540', borderRadius: 999, padding: '2px 10px' }}>
+                        {students.filter(s => s.departments?.name === d.name).length} students
+                      </span>
+                      <span style={{ marginLeft: 6, fontSize: 12, background: '#e8404020', color: '#f87171', border: '1px solid #e8404040', borderRadius: 999, padding: '2px 10px' }}>
+                        {teachers.filter(t => t.departments?.name === d.name).length} teachers
+                      </span>
                     </div>
                     <button className="ad-btn-delete" onClick={() => deleteDepartment(d.id)}>✕</button>
                   </div>
@@ -943,24 +949,30 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
-            <table className="ad-table">
-              <thead><tr><th>Day</th><th>Subject</th><th>Start</th><th>End</th><th>Action</th></tr></thead>
-              <tbody>
-                {timetable.map(t => (
-                  <tr key={t.id}>
-                    <td>{t.day}</td>
-                    <td>{t.subjects?.name || '—'}</td>
-                    <td>{t.start_time?.slice(0, 5)}</td>
-                    <td>{t.end_time?.slice(0, 5)}</td>
-                    <td>
-                      <button onClick={() => deleteTimetableSlot(t.id)}
-                        style={{ background: 'rgba(231,76,60,0.15)', color: '#e74c3c', border: '1px solid #e74c3c', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Delete</button>
-                    </td>
-                  </tr>
-                ))}
-                {timetable.length === 0 && <tr><td colSpan={5} className="ad-empty">No timetable slots.</td></tr>}
-              </tbody>
-            </table>
+            {timetable.length === 0 && <p className="ad-empty">No timetable slots.</p>}
+            {DAYS.filter(day => timetable.some(t => t.day === day)).map(day => (
+              <div key={day} style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#e84040', letterSpacing: 1, marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid #2a2a3e' }}>
+                  {day.toUpperCase()}
+                </div>
+                <table className="ad-table">
+                  <thead><tr><th>Subject</th><th>Start</th><th>End</th><th>Action</th></tr></thead>
+                  <tbody>
+                    {timetable.filter(t => t.day === day).map(t => (
+                      <tr key={t.id}>
+                        <td>{t.subjects?.name || '—'}</td>
+                        <td>{t.start_time?.slice(0, 5)}</td>
+                        <td>{t.end_time?.slice(0, 5)}</td>
+                        <td>
+                          <button onClick={() => deleteTimetableSlot(t.id)}
+                            style={{ background: 'rgba(231,76,60,0.15)', color: '#e74c3c', border: '1px solid #e74c3c', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Delete</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))}
           </div>
         )}
 
