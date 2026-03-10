@@ -176,6 +176,8 @@ export default function AdminDashboard() {
   const [selectedExam, setSelectedExam] = useState('');
   const [attendanceChart, setAttendanceChart] = useState([]);
   const [toast, setToast] = useState(null);
+  const [studentSearch, setStudentSearch] = useState('');
+  const [teacherSearch, setTeacherSearch] = useState('');
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -533,6 +535,12 @@ export default function AdminDashboard() {
                   </button>
                 </div>
               </div>
+              <input
+                placeholder="Search by name or roll number..."
+                value={studentSearch}
+                onChange={e => setStudentSearch(e.target.value)}
+                style={{ width: '100%', marginBottom: 10, padding: '7px 12px', borderRadius: 8, border: '1px solid #2a2a3e', background: '#0f0f1a', color: 'var(--text)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
+              />
               {showAddStudent && (
                 <div className="ad-form" style={{ marginBottom: 12 }}>
                   <div className="ad-form-group"><label>Full Name *</label><input placeholder="e.g. Arjun Kumar" value={newStudentName} onChange={e => setNewStudentName(e.target.value)} /></div>
@@ -552,7 +560,10 @@ export default function AdminDashboard() {
               <table className="ad-table">
                 <thead><tr><th>Roll No</th><th>Name</th><th>Dept</th><th>Year</th><th>Action</th></tr></thead>
                 <tbody>
-                  {students.map(s => (
+                  {students.filter(s =>
+                    s.profiles?.full_name?.toLowerCase().includes(studentSearch.toLowerCase()) ||
+                    s.roll_number?.toLowerCase().includes(studentSearch.toLowerCase())
+                  ).map(s => (
                     <tr key={s.id}>
                       {editStudent?.id === s.id ? (
                         <>
@@ -600,6 +611,12 @@ export default function AdminDashboard() {
                   </button>
                 </div>
               </div>
+              <input
+                placeholder="Search by name or emp code..."
+                value={teacherSearch}
+                onChange={e => setTeacherSearch(e.target.value)}
+                style={{ width: '100%', marginBottom: 10, padding: '7px 12px', borderRadius: 8, border: '1px solid #2a2a3e', background: '#0f0f1a', color: 'var(--text)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
+              />
               {showAddTeacher && (
                 <div className="ad-form" style={{ marginBottom: 12 }}>
                   <div className="ad-form-group"><label>Full Name *</label><input placeholder="e.g. Dr. Ravi Kumar" value={newTeacherName} onChange={e => setNewTeacherName(e.target.value)} /></div>
@@ -617,7 +634,10 @@ export default function AdminDashboard() {
               <table className="ad-table">
                 <thead><tr><th>Emp Code</th><th>Name</th><th>Email</th><th>Dept</th><th>Action</th></tr></thead>
                 <tbody>
-                  {teachers.map(t => (
+                  {teachers.filter(t =>
+                    t.profiles?.full_name?.toLowerCase().includes(teacherSearch.toLowerCase()) ||
+                    t.employee_code?.toLowerCase().includes(teacherSearch.toLowerCase())
+                  ).map(t => (
                     <tr key={t.id}>
                       {editTeacher?.id === t.id ? (
                         <>
