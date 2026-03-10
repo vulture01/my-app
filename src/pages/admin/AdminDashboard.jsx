@@ -6,7 +6,7 @@ import { ThemeToggle } from '../../context/ThemeContext';
 function AIChatBuddy({ adminName }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: `Hi ${adminName}! I am your AI admin assistant. Ask me about managing departments, students, announcements, or anything about EduSync!` }
+    { role: 'assistant', content: `Hi ${adminName}! I am your AI admin assistant. Ask me about managing departments, students, announcements, or anything about Studyology!` }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
