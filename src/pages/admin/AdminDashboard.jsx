@@ -271,7 +271,7 @@ export default function AdminDashboard() {
       const { error: e2 } = await supabase.from('students').insert({ id: newId, department_id: newStudentDept, year: parseInt(newStudentYear), section: newStudentSection, roll_number: newStudentRoll.trim() });
       if (e2) throw e2;
       showToast('Student added!');
-      setNewStudentName(''); setNewStudentEmail(''); setNewStudentRoll(''); setNewStudentYear('1'); setNewStudentSection('A'); setNewStudentDept(''); setStudentMsg('');\ setStudentMsg('');\
+      setNewStudentName(''); setNewStudentEmail(''); setNewStudentRoll(''); setNewStudentYear('1'); setNewStudentSection('A'); setNewStudentDept('');
       setShowAddStudent(false); fetchAll();
     } catch (e) { showToast('Error: ' + e.message, 'error'); }
   }
