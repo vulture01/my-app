@@ -342,10 +342,11 @@ export default function AdminDashboard() {
   async function updateLeaveStatus(id, status, remark) {
     await supabase.from('leave_requests').update({ status, admin_remark: remark }).eq('id', id);
     setLeaveRequests(prev => prev.map(l => l.id === id ? { ...l, status, admin_remark: remark } : l));
+    showToast(`Leave ${status.toLowerCase()} successfully!`);
   }
 
   async function addPayroll() {
-    if (!newPayroll.teacher_id || !newPayroll.month || !newPayroll.basic_pay) { setPayrollMsg('Teacher, month and basic pay are required.'); return; }
+    if (!newPayroll.teacher_id || !newPayroll.month || !newPayroll.basic_pay) { showToast('Teacher, month and basic pay are required.', 'error'); return; }
     const { error: e } = await supabase.from('payroll').insert({
       teacher_id: newPayroll.teacher_id,
       month: newPayroll.month,
