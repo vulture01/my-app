@@ -77,7 +77,7 @@ export default function Login() {
 
         {!showChangePw ? (
           <>
-            <h1 style={{ textAlign: 'center', marginBottom: '8px' }}>EduSync</h1>
+            <h1 style={{ textAlign: 'center', marginBottom: '8px' }}>Studyology</h1>
             <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: '24px' }}>Sign in to your account</p>
             {error && <p style={{ color: 'red', marginBottom: '12px', fontSize: 14 }}>{error}</p>}
             <input type="email" placeholder="Email" value={email}

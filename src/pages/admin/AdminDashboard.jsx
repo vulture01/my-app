@@ -362,7 +362,7 @@ export default function AdminDashboard() {
   return (
     <div className="ad-root">
       <header className="ad-header">
-        <div className="ad-logo">Edu<span>Sync</span></div>
+        <div className="ad-logo">Study<span>ology</span></div>
         <div className="ad-header-center"><span className="ad-role-badge">ADMIN</span></div>
         <div className="ad-header-right">
           <span className="ad-name">{profile?.full_name || 'Admin'}</span>

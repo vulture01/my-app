@@ -530,7 +530,7 @@ export default function TeacherDashboard() {
     <div className="td-root">
       {/* Header */}
       <header className="td-header">
-        <div className="td-logo">Edu<span>Sync</span></div>
+        <div className="ad-logo">Study<span>ology</span></div>
         <div className="td-header-center">
           <span className="td-role-badge">TEACHER</span>
         </div>

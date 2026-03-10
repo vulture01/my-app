@@ -480,7 +480,7 @@ export default function StudentDashboard() {
 
       <header className="dash-header">
         <div className="dash-header-left">
-          <h1>Edu<span>Sync</span></h1>
+          <h1>Study<span>ology</span></h1>
           <p>Welcome back, {student?.full_name?.split(' ')[0] || 'Student'}</p>
         </div>
         <div className="dash-header-center">
