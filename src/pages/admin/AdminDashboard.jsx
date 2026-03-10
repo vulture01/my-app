@@ -866,6 +866,18 @@ export default function AdminDashboard() {
               <h2>Fees Management</h2>
               <span className="ad-badge">{fees.length} records</span>
             </div>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+              {[
+                { label: 'Total Fees', value: `Rs. ${fees.reduce((s, f) => s + (f.amount || 0), 0).toLocaleString('en-IN')}`, color: '#4f46e5' },
+                { label: 'Collected', value: `Rs. ${fees.filter(f => f.paid).reduce((s, f) => s + (f.amount || 0), 0).toLocaleString('en-IN')}`, color: '#27ae60' },
+                { label: 'Pending', value: `Rs. ${fees.filter(f => !f.paid).reduce((s, f) => s + (f.amount || 0), 0).toLocaleString('en-IN')}`, color: '#e84040' },
+              ].map(stat => (
+                <div key={stat.label} style={{ flex: 1, background: 'var(--card-bg-2)', border: `1px solid ${stat.color}33`, borderRadius: 10, padding: '12px 16px' }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{stat.label}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                </div>
+              ))}
+            </div>
             <table className="ad-table">
               <thead><tr><th>Student</th><th>Fee Type</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Action</th></tr></thead>
               <tbody>
