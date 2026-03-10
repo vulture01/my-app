@@ -42,7 +42,7 @@ function AIChatBuddy({ adminName }) {
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',
           messages: [
-            { role: 'system', content: 'You are a helpful assistant for a college admin using EduSync. Help with administrative tasks, department management, announcements, and institutional queries. Be concise and professional.' },
+            { role: 'system', content: 'You are a helpful assistant for a college admin using Studyology. Help with administrative tasks, department management, announcements, and institutional queries. Always refer to the platform as Studyology. Be concise and professional.' },
             ...messages, userMsg
           ],
           max_tokens: 300
