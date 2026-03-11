@@ -266,15 +266,34 @@ export default function AdminDashboard() {
   }
 
 async function loadHallTickets(examId) {
-  const { data, error } = await supabase
+  const { data: tickets } = await supabase
     .from('hall_tickets')
-    .select(`
-      id, seat_number, hall_number, issued,
-      students(roll_number, profiles(full_name))
-    `)
+    .select('id, student_id, seat_number, hall_number, issued')
     .eq('exam_id', examId);
-  console.log('hall tickets:', data, error);
-  setHallTickets(data || []);
+
+  if (!tickets?.length) { setHallTickets([]); return; }
+
+  const studentIds = tickets.map(t => t.student_id);
+  const { data: studs } = await supabase
+    .from('students')
+    .select('id, roll_number')
+    .in('id', studentIds);
+  const { data: profs } = await supabase
+    .from('profiles')
+    .select('id, full_name')
+    .in('id', studentIds);
+
+  const studMap = {};
+  (studs || []).forEach(s => { studMap[s.id] = s.roll_number; });
+  const profMap = {};
+  (profs || []).forEach(p => { profMap[p.id] = p.full_name; });
+
+  const merged = tickets.map(t => ({
+    ...t,
+    roll_number: studMap[t.student_id] || '—',
+    full_name: profMap[t.student_id] || '—',
+  }));
+  setHallTickets(merged);
 }
 
   async function createAnnouncement() {
@@ -389,7 +408,11 @@ async function loadHallTickets(examId) {
     setNewPayroll({ teacher_id: '', month: '', basic_pay: '', allowances: '', deductions: '', paid: false });
     setShowAddPayroll(false); fetchAll();
   }
-
+  async function togglePayroll(id, currentPaid) {
+  await supabase.from('payroll').update({ paid: !currentPaid }).eq('id', id);
+  setPayrolls(prev => prev.map(p => p.id === id ? { ...p, paid: !currentPaid } : p));
+  showToast(!currentPaid ? 'Marked as paid!' : 'Marked as pending!');
+}
   async function toggleFee(id, currentPaid) {
     await supabase.from('fees').update({ paid: !currentPaid, paid_date: !currentPaid ? new Date().toISOString().split('T')[0] : null }).eq('id', id);
     setFees(prev => prev.map(f => f.id === id ? { ...f, paid: !currentPaid, paid_date: !currentPaid ? new Date().toISOString().split('T')[0] : null } : f));
@@ -877,7 +900,7 @@ async function loadHallTickets(examId) {
               ))}
             </div>
             <table className="ad-table">
-              <thead><tr><th>Teacher</th><th>Month</th><th>Basic Pay</th><th>Allowances</th><th>Deductions</th><th>Net Pay</th><th>Status</th></tr></thead>
+               <thead><tr><th>Teacher</th><th>Month</th><th>Basic Pay</th><th>Allowances</th><th>Deductions</th><th>Net Pay</th><th>Status</th><th>Action</th></tr></thead>
               <tbody>
                 {payrolls.map(p => (
                   <tr key={p.id}>
@@ -888,6 +911,11 @@ async function loadHallTickets(examId) {
                     <td>Rs. {p.deductions?.toLocaleString('en-IN')}</td>
                     <td>Rs. {p.net_pay?.toLocaleString('en-IN')}</td>
                     <td><span style={{ padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: p.paid ? 'rgba(39,174,96,0.15)' : 'rgba(241,196,15,0.15)', color: p.paid ? '#27ae60' : '#f1c40f' }}>{p.paid ? 'Paid' : 'Pending'}</span></td>
+                    <td>
+                      <button onClick={() => togglePayroll(p.id, p.paid)} style={{ background: p.paid ? 'rgba(231,76,60,0.15)' : 'rgba(39,174,96,0.15)', color: p.paid ? '#e74c3c' : '#27ae60', border: `1px solid ${p.paid ? '#e74c3c' : '#27ae60'}`, borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>
+                        {p.paid ? 'Mark Unpaid' : 'Mark Paid'}
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {payrolls.length === 0 && <tr><td colSpan={7} className="ad-empty">No payroll records.</td></tr>}
@@ -994,8 +1022,8 @@ async function loadHallTickets(examId) {
                 <tbody>
                   {hallTickets.map(h => (
                     <tr key={h.id}>
-                      <td><span className="ad-roll">{h.students?.roll_number || '—'}</span></td>
-                      <td>{h.students?.profiles?.full_name || '—'}</td>
+                      <td><span className="ad-roll">{h.roll_number || '—'}</span></td>
+                      <td>{h.full_name || '—'}</td>
                       <td>{h.hall_number}</td>
                       <td>{h.seat_number}</td>
                       <td><span style={{ padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: h.issued ? 'rgba(39,174,96,0.15)' : 'rgba(241,196,15,0.15)', color: h.issued ? '#27ae60' : '#f1c40f' }}>{h.issued ? 'Issued' : 'Pending'}</span></td>
