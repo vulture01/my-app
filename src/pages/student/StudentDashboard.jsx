@@ -121,7 +121,6 @@ function CourseLogModal({ subject, subjectId, onClose }) {
         }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Modal Header */}
         <div style={{ padding: '18px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <div style={{ color: 'var(--text)', fontWeight: 700, fontSize: 16 }}>{subject}</div>
@@ -135,7 +134,6 @@ function CourseLogModal({ subject, subjectId, onClose }) {
           </button>
         </div>
 
-        {/* Timeline */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
           {loading ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Loading...</p>
@@ -145,14 +143,12 @@ function CourseLogModal({ subject, subjectId, onClose }) {
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {logs.map((log, i) => (
                 <div key={log.id} style={{ display: 'flex', gap: 16 }}>
-                  {/* dot + line */}
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 20 }}>
                     <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#e84040', border: '2px solid var(--border)', marginTop: 4, flexShrink: 0 }} />
                     {i < logs.length - 1 && (
                       <div style={{ width: 2, flex: 1, background: 'var(--border)', minHeight: 32 }} />
                     )}
                   </div>
-                  {/* content */}
                   <div style={{ flex: 1, paddingBottom: 20 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                       <div style={{ color: 'var(--text)', fontWeight: 600, fontSize: 14 }}>{log.topic}</div>
@@ -172,7 +168,6 @@ function CourseLogModal({ subject, subjectId, onClose }) {
           )}
         </div>
 
-        {/* Footer */}
         <div style={{ padding: '12px 20px', borderTop: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: 12 }}>
           {logs.length} session(s) logged · Read only view
         </div>
@@ -292,6 +287,128 @@ function AIChatBuddy({ studentName, department, year }) {
   );
 }
 
+// ── ATTENDANCE HEATMAP ────────────────────────────────────────────────────────
+function AttendanceHeatmap({ absents }) {
+  const today = new Date();
+
+  const startDate = new Date(today);
+  startDate.setDate(today.getDate() - 83);
+  const dayOfWeek = startDate.getDay();
+  const offset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  startDate.setDate(startDate.getDate() + offset);
+
+  const dateMap = {};
+  absents.forEach(a => {
+    const d = a.date;
+    dateMap[d] = (dateMap[d] || 0) + 1;
+  });
+
+  const cells = [];
+  for (let i = 0; i < 84; i++) {
+    const d = new Date(startDate);
+    d.setDate(startDate.getDate() + i);
+    const iso = d.toISOString().split('T')[0];
+    const dow = d.getDay();
+    const isWeekend = dow === 0 || dow === 6;
+    const count = dateMap[iso] || 0;
+    const isFuture = d > today;
+    cells.push({ iso, isWeekend, count, isFuture, date: d });
+  }
+
+  const weeks = [];
+  for (let w = 0; w < 12; w++) {
+    weeks.push(cells.slice(w * 7, w * 7 + 7));
+  }
+
+  const monthLabels = weeks.map((week, wi) => {
+    const firstDay = week[0].date;
+    const prevWeekFirst = wi > 0 ? weeks[wi - 1][0].date : null;
+    if (wi === 0 || (prevWeekFirst && firstDay.getMonth() !== prevWeekFirst.getMonth())) {
+      return firstDay.toLocaleString('default', { month: 'short' });
+    }
+    return '';
+  });
+
+  const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  function getCellColor(cell) {
+    if (cell.isFuture || cell.isWeekend) return 'var(--card-bg-2)';
+    if (cell.count === 0) return 'rgba(39,174,96,0.55)';
+    if (cell.count === 1) return 'rgba(231,76,60,0.65)';
+    if (cell.count === 2) return 'rgba(231,76,60,0.82)';
+    return '#e74c3c';
+  }
+
+  function getCellTitle(cell) {
+    if (cell.isFuture) return cell.iso + ': Future';
+    if (cell.isWeekend) return cell.iso + ': Weekend';
+    if (cell.count === 0) return cell.iso + ': Present';
+    return cell.iso + ': ' + cell.count + ' absence' + (cell.count > 1 ? 's' : '');
+  }
+
+  return (
+    <div style={{ marginBottom: 20 }}>
+      {/* Month labels */}
+      <div style={{ display: 'flex', gap: 3, marginLeft: 36, marginBottom: 4 }}>
+        {weeks.map((_, wi) => (
+          <div key={wi} style={{ width: 14, fontSize: 9, color: 'var(--text-muted)', textAlign: 'left', whiteSpace: 'nowrap' }}>
+            {monthLabels[wi]}
+          </div>
+        ))}
+      </div>
+
+      {/* Grid */}
+      <div style={{ display: 'flex', gap: 4, alignItems: 'flex-start' }}>
+        {/* Day labels */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginRight: 4 }}>
+          {DAY_LABELS.map(d => (
+            <div key={d} style={{ height: 14, fontSize: 9, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', width: 28 }}>{d}</div>
+          ))}
+        </div>
+
+        {/* Week columns */}
+        <div style={{ display: 'flex', gap: 3 }}>
+          {weeks.map((week, wi) => (
+            <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {week.map((cell, di) => (
+                <div
+                  key={di}
+                  title={getCellTitle(cell)}
+                  style={{
+                    width: 14, height: 14,
+                    borderRadius: 3,
+                    background: getCellColor(cell),
+                    cursor: cell.isFuture || cell.isWeekend ? 'default' : 'pointer',
+                    transition: 'transform 0.1s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.3)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div style={{ display: 'flex', gap: 14, marginTop: 10, marginLeft: 36, alignItems: 'center', flexWrap: 'wrap' }}>
+        {[
+          { color: 'var(--card-bg-2)', label: 'No Data' },
+          { color: 'rgba(39,174,96,0.55)', label: 'Present' },
+          { color: 'rgba(231,76,60,0.65)', label: '1 Absence' },
+          { color: 'rgba(231,76,60,0.82)', label: '2 Absences' },
+          { color: '#e74c3c', label: '3+ Absences' },
+        ].map(l => (
+          <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--text-muted)' }}>
+            <div style={{ width: 12, height: 12, borderRadius: 2, background: l.color, flexShrink: 0 }} />
+            {l.label}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── MAIN DASHBOARD ────────────────────────────────────────────────────────────
 export default function StudentDashboard() {
   const [student, setStudent] = useState(null);
@@ -396,14 +513,12 @@ export default function StudentDashboard() {
           .eq('student_id', user.id);
         setArrears((arrData || []).filter(a => !a.cleared));
 
-        // Hall tickets
         const { data: htData } = await supabase
           .from('hall_tickets')
           .select('id, seat_number, hall_number, issued, exams(title, exam_type, exam_date, start_time, end_time, hall, subjects(name))')
           .eq('student_id', user.id);
         setHallTickets(htData || []);
 
-        // Absent dates
         const { data: absData } = await supabase
           .from('attendance')
           .select('subject_id, subjects(name), date')
@@ -588,8 +703,6 @@ export default function StudentDashboard() {
                   );
                 })}
               </div>
-
-              {/* Course Log hint */}
               <div style={{ marginTop: 14, padding: '10px 14px', background: 'var(--card-bg-2)', borderRadius: 8, border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#e84040', flexShrink: 0 }} />
                 <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>
@@ -721,7 +834,6 @@ export default function StudentDashboard() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {hallTickets.map((h) => (
                   <div key={h.id} style={{ background: 'var(--card-bg-2)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px' }}>
-                    {/* Ticket top row */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                       <div>
                         <div style={{ color: 'var(--text)', fontWeight: 700, fontSize: 14 }}>{h.exams?.title || 'Exam'}</div>
@@ -735,7 +847,6 @@ export default function StudentDashboard() {
                         {h.issued ? 'Issued' : 'Pending'}
                       </span>
                     </div>
-                    {/* Ticket grid */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
                       <div style={{ background: 'var(--bg)', borderRadius: 6, padding: '6px 10px' }}>
                         <div style={{ color: 'var(--text-muted)', fontSize: 10, marginBottom: 2 }}>DATE</div>
@@ -773,32 +884,36 @@ export default function StudentDashboard() {
             )}
           </div>
 
-          {/* ABSENT DETAILS */}
+          {/* ATTENDANCE HEATMAP + ABSENT DETAILS */}
           <div className="card">
             <div className="card-header">
-              <h2 className="card-title">Absent Details</h2>
+              <h2 className="card-title">Attendance Heatmap</h2>
               <span className="card-badge">{absents.length} records</span>
             </div>
             {Object.keys(absentsBySubject).length === 0 ? (
               <p style={{ color: '#27ae60', fontSize: 13, fontWeight: 600 }}>No Absences Recorded</p>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {Object.entries(absentsBySubject).map(([subject, dates], i) => (
-                  <div key={i}>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text)', marginBottom: 4 }}>{subject}</div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                      {dates.map((d, j) => (
-                        <span key={j} style={{
-                          background: 'rgba(231,76,60,0.15)', color: '#e74c3c',
-                          borderRadius: 6, padding: '2px 8px', fontSize: 12
-                        }}>
-                          {new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                        </span>
-                      ))}
+              <>
+                <AttendanceHeatmap absents={absents} />
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, marginTop: 4, fontWeight: 600 }}>All Absent Dates</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {Object.entries(absentsBySubject).map(([subject, dates], i) => (
+                    <div key={i}>
+                      <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text)', marginBottom: 4 }}>{subject}</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {dates.map((d, j) => (
+                          <span key={j} style={{
+                            background: 'rgba(231,76,60,0.15)', color: '#e74c3c',
+                            borderRadius: 6, padding: '2px 8px', fontSize: 12
+                          }}>
+                            {new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
