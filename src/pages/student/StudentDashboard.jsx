@@ -177,7 +177,7 @@ function CourseLogModal({ subject, subjectId, onClose }) {
 }
 
 // ── AI CHAT BUDDY ─────────────────────────────────────────────────────────────
-function AIChatBuddy({ studentName, department, year }) {
+function AIChatBuddy({ studentName, department, year, attendance = [], marks = [], arrears = [], hallTickets = [] }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
     { role: 'assistant', content: `Hi ${studentName}! I am your AI study buddy. Ask me anything about your subjects, exams, or studies!` }
@@ -201,7 +201,16 @@ function AIChatBuddy({ studentName, department, year }) {
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',
           messages: [
-            { role: 'system', content: `You are a helpful academic assistant for a ${department} student in Year ${year} at Studyology. Keep responses concise and helpful. Always refer to the platform as Studyology.` },
+            { role: 'system', content: `You are a helpful academic assistant for ${studentName}, a ${department} student in Year ${year} at Studyology. Keep responses concise and helpful. Always refer to the platform as Studyology.
+
+Student context:
+- Attendance: ${attendance.map(a => `${a.subject} ${a.percentage}%`).join(', ') || 'No data'}
+- Low attendance subjects (below 75%): ${attendance.filter(a => a.percentage < 75).map(a => a.subject).join(', ') || 'None'}
+- Marks: ${marks.map(m => `${m.subject} ${m.exam_type} ${m.score}/${m.max_score}`).join(', ') || 'No data'}
+- Arrears: ${arrears.length > 0 ? arrears.map(a => a.subjects?.name).join(', ') : 'None'}
+- Upcoming exams: ${hallTickets.length > 0 ? hallTickets.map(h => `${h.exams?.title} on ${h.exams?.exam_date}`).join(', ') : 'None'}
+
+Use this context to give personalized advice. If asked about detention risk, check attendance below 60%.` },
             ...messages,
             userMsg
           ],
@@ -927,6 +936,10 @@ export default function StudentDashboard() {
         studentName={student?.full_name?.split(' ')[0] || 'Student'}
         department={studentDetails?.departments?.name || 'BCA'}
         year={studentDetails?.year || 2}
+        attendance={attendance}
+        marks={marks}
+        arrears={arrears}
+        hallTickets={hallTickets}
       />
     </div>
   );
