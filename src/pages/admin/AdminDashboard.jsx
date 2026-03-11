@@ -265,13 +265,17 @@ export default function AdminDashboard() {
     }
   }
 
-  async function loadHallTickets(examId) {
-    const { data } = await supabase
-      .from('hall_tickets')
-      .select('id, student_id, seat_number, hall_number, issued, profiles(full_name), students(roll_number)')
-      .eq('exam_id', examId);
-    setHallTickets(data || []);
-  }
+async function loadHallTickets(examId) {
+  const { data, error } = await supabase
+    .from('hall_tickets')
+    .select(`
+      id, seat_number, hall_number, issued,
+      students(roll_number, profiles(full_name))
+    `)
+    .eq('exam_id', examId);
+  console.log('hall tickets:', data, error);
+  setHallTickets(data || []);
+}
 
   async function createAnnouncement() {
     if (!annTitle.trim()) return;
@@ -991,7 +995,7 @@ export default function AdminDashboard() {
                   {hallTickets.map(h => (
                     <tr key={h.id}>
                       <td><span className="ad-roll">{h.students?.roll_number || '—'}</span></td>
-                      <td>{h.profiles?.full_name || '—'}</td>
+                      <td>{h.students?.profiles?.full_name || '—'}</td>
                       <td>{h.hall_number}</td>
                       <td>{h.seat_number}</td>
                       <td><span style={{ padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: h.issued ? 'rgba(39,174,96,0.15)' : 'rgba(241,196,15,0.15)', color: h.issued ? '#27ae60' : '#f1c40f' }}>{h.issued ? 'Issued' : 'Pending'}</span></td>
