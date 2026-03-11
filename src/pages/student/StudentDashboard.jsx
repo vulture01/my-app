@@ -566,10 +566,13 @@ export default function StudentDashboard() {
     const map = {};
     absents.forEach(a => {
       const name = a.subjects?.name || a.subject_id;
-      if (!map[name]) map[name] = [];
-      map[name].push(a.date);
+      if (!map[name]) map[name] = new Set();
+      map[name].add(a.date); // Set automatically removes duplicates
     });
-    return map;
+    // Convert Sets back to sorted arrays
+    return Object.fromEntries(
+      Object.entries(map).map(([k, v]) => [k, [...v].sort((a, b) => b.localeCompare(a))])
+    );
   }, [absents]);
 
   if (loading) {
