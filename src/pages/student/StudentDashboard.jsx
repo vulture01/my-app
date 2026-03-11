@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { supabase } from '../../supabaseClient';
 import './StudentDashboard.css';
 import { ThemeToggle } from '../../context/ThemeContext';
@@ -43,47 +43,7 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
-function buildAISummary(attendance, marks) {
-  const warnings = [];
-  const positives = [];
-  const tags = [];
 
-  if (attendance.length > 0) {
-    const lowAtt = attendance.filter(a => a.percentage < 75);
-    const criticalAtt = attendance.filter(a => a.percentage < 60);
-    if (criticalAtt.length > 0) {
-      warnings.push(`<strong>${criticalAtt.length} subject(s)</strong> below 60% — detention risk`);
-      tags.push({ label: 'Attendance Critical', type: 'tag-warn' });
-    } else if (lowAtt.length > 0) {
-      warnings.push(`<strong>${lowAtt.length} subject(s)</strong> below 75% threshold`);
-      tags.push({ label: 'Improve Attendance', type: 'tag-warn' });
-    } else {
-      positives.push('attendance is above 75% across all subjects');
-      tags.push({ label: 'Attendance OK', type: 'tag-ok' });
-    }
-  }
-
-  if (marks.length > 0) {
-    const avgPct = Math.min(100, marks.reduce((sum, m) => sum + (m.score / m.max_score) * 100, 0) / marks.length);
-    if (avgPct >= 80) {
-      positives.push(`strong average score of <strong>${avgPct.toFixed(0)}%</strong>`);
-      tags.push({ label: 'High Performer', type: 'tag-ok' });
-    } else if (avgPct < 60) {
-      warnings.push(`current average is only <strong>${avgPct.toFixed(0)}%</strong> — revision needed`);
-      tags.push({ label: 'Study More', type: 'tag-info' });
-    } else {
-      tags.push({ label: `Avg ${avgPct.toFixed(0)}%`, type: 'tag-info' });
-    }
-  }
-
-  let summary = '';
-  if (warnings.length) summary += `Heads-up — ${warnings.join(' and ')}. `;
-  if (positives.length) summary += `Your ${positives.join(' and ')}. `;
-  if (!summary) summary = 'Everything looks on track. Keep up the consistent effort!';
-  summary += ' Check your timetable and plan your week.';
-
-  return { summary, tags };
-}
 
 // ── COURSE LOG MODAL ──────────────────────────────────────────────────────────
 function CourseLogModal({ subject, subjectId, onClose }) {
@@ -569,7 +529,57 @@ export default function StudentDashboard() {
     [timetable, activeDay]
   );
 
-  const aiInsight = useMemo(() => buildAISummary(attendance, marks), [attendance, marks]);
+  const [aiInsight, setAiInsight] = useState({ summary: 'Analyzing your academic data...', tags: [] });
+  const [aiLoading, setAiLoading] = useState(false);
+  const aiCalledRef = useRef(false);
+
+  useEffect(() => {
+    if (!attendance.length || aiCalledRef.current) return;
+    aiCalledRef.current = true;
+    setAiLoading(true);
+
+    const prompt = `You are an academic advisor for a student at Studyology. Analyze this data and give a 2-sentence personalized summary.
+
+Attendance: ${attendance.map(a => `${a.subject} ${a.percentage}%`).join(', ')}
+Marks: ${marks.map(m => `${m.subject} ${m.exam_type} ${m.score}/${m.max_score} (${Math.round((m.score/m.max_score)*100)}%)`).join(', ')}
+
+End your response with a new line: TAGS: tag1, tag2, tag3
+Each tag must be one of: Attendance OK, Attendance Critical, Improve Attendance, High Performer, Study More, On Track, Needs Focus
+Only output the summary + TAGS line. Nothing else.`;
+
+    fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 200
+      })
+    })
+    .then(r => r.json())
+    .then(data => {
+      const text = data.choices?.[0]?.message?.content || '';
+      const [summaryPart, tagsPart] = text.split('TAGS:');
+      const summary = summaryPart?.trim() || text;
+      const tagLabels = tagsPart ? tagsPart.split(',').map(t => t.trim()).filter(Boolean) : [];
+      const tagTypeMap = {
+        'Attendance OK': 'tag-ok',
+        'Attendance Critical': 'tag-warn',
+        'Improve Attendance': 'tag-warn',
+        'High Performer': 'tag-ok',
+        'Study More': 'tag-info',
+        'On Track': 'tag-ok',
+        'Needs Focus': 'tag-warn',
+      };
+      const tags = tagLabels.map(label => ({ label, type: tagTypeMap[label] || 'tag-info' }));
+      setAiInsight({ summary, tags });
+    })
+    .catch(() => setAiInsight({ summary: 'Could not load AI analysis. Check your connection.', tags: [] }))
+    .finally(() => setAiLoading(false));
+  }, [attendance, marks]);
 
   const absentsBySubject = useMemo(() => {
     const map = {};
@@ -824,9 +834,16 @@ export default function StudentDashboard() {
             </div>
             <div className="ai-pulse">
               <div className="ai-dot" />
-              <span className="ai-status-text">Analysis Ready</span>
+              <span className="ai-status-text">{aiLoading ? 'Analyzing...' : 'Analysis Ready'}</span>
             </div>
-            <p className="ai-summary" dangerouslySetInnerHTML={{ __html: aiInsight.summary }} />
+            {aiLoading ? (
+              <div style={{ background: 'var(--card-bg-2)', borderRadius: 8, padding: '10px 14px', marginBottom: 10 }}>
+                <div style={{ height: 12, background: 'var(--border)', borderRadius: 4, marginBottom: 6, width: '90%' }} />
+                <div style={{ height: 12, background: 'var(--border)', borderRadius: 4, width: '70%' }} />
+              </div>
+            ) : (
+              <p className="ai-summary">{aiInsight.summary}</p>
+            )}
             <div className="ai-tags">
               {aiInsight.tags.map((t, i) => (
                 <span className={`ai-tag ${t.type}`} key={i}>{t.label}</span>
