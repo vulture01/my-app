@@ -76,9 +76,9 @@ function AIChatBuddy({ teacherName }) {
           <div style={{ padding: '14px 16px', background: 'linear-gradient(135deg, #e84040, #ff6b35)', display: 'flex', alignItems: 'center', gap: 10 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 20 }}>🤖</span>
-              <div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>AI Teaching Assistant</div>
-            </div>
+                <span style={{ fontSize: 20 }}>🤖</span>
+                <div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>AI Teaching Assistant</div>
+              </div>
               <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11 }}>Here to help you teach better</div>
             </div>
           </div>
@@ -234,7 +234,6 @@ function LeaveTab({ teacherId }) {
     <div className="td-panel">
       <div className="td-panel-header"><h2>Leave Requests</h2></div>
 
-      {/* Request Form */}
       <div style={{ background: 'var(--card-bg, #1a1a2e)', border: '1px solid #2a2a3e', borderRadius: 12, padding: 20, marginBottom: 24 }}>
         <h3 style={{ color: 'var(--text, #fff)', marginBottom: 16, fontSize: 15 }}>New Leave Request</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
@@ -265,7 +264,6 @@ function LeaveTab({ teacherId }) {
         </button>
       </div>
 
-      {/* History Table */}
       {leaves.length === 0 ? (
         <p className="td-empty">No leave requests yet.</p>
       ) : (
@@ -331,6 +329,14 @@ export default function TeacherDashboard() {
   const [addForm, setAddForm] = useState({ full_name: '', roll_number: '', year: '2', section: 'A' });
   const [studentMsg, setStudentMsg] = useState('');
 
+  // ── NEW: At-Risk Students
+  const [atRiskStudents, setAtRiskStudents] = useState([]);
+
+  // ── NEW: AI Course Log Generator
+  const [courseLogGenerating, setCourseLogGenerating] = useState(false);
+  const [courseLogMsg, setCourseLogMsg] = useState('');
+  const [attendanceSaved, setAttendanceSaved] = useState(false);
+
   useEffect(() => { fetchAll(); }, []);
 
   async function fetchAll() {
@@ -356,12 +362,38 @@ export default function TeacherDashboard() {
           .select('id, roll_number, year, section, profiles(full_name, email)')
           .eq('year', 2).eq('section', 'A');
         setStudents(studs || []);
+
         const init = {};
         (studs || []).forEach(s => { init[s.id] = 'present'; });
         setAttendanceMap(init);
         const marksInit = {};
         (studs || []).forEach(s => { marksInit[s.id] = ''; });
         setMarksMap(marksInit);
+
+        // ── NEW: Fetch attendance to compute at-risk students
+        const { data: attAll } = await supabase
+          .from('attendance')
+          .select('student_id, status')
+          .in('subject_id', subIds);
+
+        const studentAttMap = {};
+        (attAll || []).forEach(row => {
+          if (!studentAttMap[row.student_id]) studentAttMap[row.student_id] = { present: 0, total: 0 };
+          studentAttMap[row.student_id].total += 1;
+          if (row.status === 'present') studentAttMap[row.student_id].present += 1;
+        });
+
+        const atRisk = (studs || [])
+          .filter(s => {
+            const att = studentAttMap[s.id];
+            if (!att || att.total === 0) return false;
+            return (att.present / att.total) * 100 < 75;
+          })
+          .map(s => ({
+            ...s,
+            percentage: Math.round((studentAttMap[s.id].present / studentAttMap[s.id].total) * 100)
+          }));
+        setAtRiskStudents(atRisk);
       }
 
       const { data: tt } = await supabase
@@ -378,6 +410,8 @@ export default function TeacherDashboard() {
   // Load existing attendance when subject/date changes
   useEffect(() => {
     if (!selectedSubject || !attendanceDate || !students.length) return;
+    setAttendanceSaved(false);
+    setCourseLogMsg('');
     async function loadExisting() {
       const { data } = await supabase
         .from('attendance')
@@ -419,7 +453,7 @@ export default function TeacherDashboard() {
 
   async function saveAttendance() {
     if (!selectedSubject) return;
-    setAttendanceSaving(true); setAttendanceMsg('');
+    setAttendanceSaving(true); setAttendanceMsg(''); setCourseLogMsg('');
     try {
       await supabase.from('attendance').delete()
         .eq('subject_id', selectedSubject).eq('date', attendanceDate);
@@ -433,11 +467,59 @@ export default function TeacherDashboard() {
       const { error: e } = await supabase.from('attendance').insert(rows);
       if (e) throw e;
       setAttendanceMsg('Attendance saved successfully!');
+      setAttendanceSaved(true);
     } catch (e) {
       setAttendanceMsg('Error: ' + e.message);
+      setAttendanceSaved(false);
     } finally {
       setAttendanceSaving(false);
     }
+  }
+
+  // ── NEW: AI Course Log Generator
+  async function generateCourseLog() {
+    setCourseLogGenerating(true);
+    setCourseLogMsg('');
+    const subjectName = subjects.find(s => s.id === selectedSubject)?.name || 'the subject';
+    const absentCount = Object.values(attendanceMap).filter(v => v === 'absent').length;
+    const prompt = `You are helping a college teacher log what was taught today.
+Subject: ${subjectName}
+Date: ${attendanceDate}
+Students present: ${students.length - absentCount} out of ${students.length}
+
+Generate a realistic college-level topic and short description for this class session.
+Respond in JSON only (no extra text, no markdown): {"topic": "...", "description": "..."}
+Keep topic under 8 words. Keep description under 40 words.`;
+
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}` },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 150
+        })
+      });
+      const data = await res.json();
+      const text = data.choices?.[0]?.message?.content || '{}';
+      const clean = text.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(clean);
+
+      const { error: insertErr } = await supabase.from('course_logs').insert({
+        subject_id: selectedSubject,
+        teacher_id: profile?.id,
+        topic: parsed.topic,
+        description: parsed.description,
+        taught_on: attendanceDate
+      });
+
+      if (insertErr) throw insertErr;
+      setCourseLogMsg(`Log saved: "${parsed.topic}"`);
+    } catch (e) {
+      setCourseLogMsg('Error generating log. Try again.');
+    }
+    setCourseLogGenerating(false);
   }
 
   async function saveMarks() {
@@ -458,7 +540,6 @@ export default function TeacherDashboard() {
       const { error: e } = await supabase.from('marks').insert(rows);
       if (e) throw e;
       setMarksMsg('Marks saved successfully!');
-      // Reload existing
       const { data } = await supabase.from('marks').select('id, student_id, score, max_score')
         .eq('subject_id', marksSubject).eq('exam_type', examType);
       setExistingMarks(data || []);
@@ -506,14 +587,14 @@ export default function TeacherDashboard() {
     const newId = crypto.randomUUID();
     const { error: e1 } = await supabase.from('profiles').insert({
       id: newId, full_name: addForm.full_name,
-      email: addForm.roll_number.toLowerCase() + '@edusync.com', role: 'student'
+      email: addForm.roll_number.toLowerCase() + '@studyology.com', role: 'student'
     });
     const { error: e2 } = await supabase.from('students').insert({
       id: newId, roll_number: addForm.roll_number,
       year: Number(addForm.year), section: addForm.section
     });
     if (e1 || e2) { setStudentMsg('Error: ' + (e1?.message || e2?.message)); return; }
-    const newStudent = { id: newId, roll_number: addForm.roll_number, year: Number(addForm.year), section: addForm.section, profiles: { full_name: addForm.full_name, email: addForm.roll_number.toLowerCase() + '@edusync.com' } };
+    const newStudent = { id: newId, roll_number: addForm.roll_number, year: Number(addForm.year), section: addForm.section, profiles: { full_name: addForm.full_name, email: addForm.roll_number.toLowerCase() + '@studyology.com' } };
     setStudents(prev => [...prev, newStudent]);
     setAddMode(false);
     setAddForm({ full_name: '', roll_number: '', year: '2', section: 'A' });
@@ -525,6 +606,12 @@ export default function TeacherDashboard() {
 
   const todaySlots = timetable.filter(t => t.day === DAYS[activeDay]);
   const presentCount = Object.values(attendanceMap).filter(v => v === 'present').length;
+
+  // ── NEW: Marks Analytics — compute from existingMarks
+  const marksScores = existingMarks.map(m => (m.score / (m.max_score || maxScore)) * 100);
+  const marksAvg = marksScores.length ? Math.round(marksScores.reduce((a, b) => a + b, 0) / marksScores.length) : null;
+  const marksTop = marksScores.length ? Math.round(Math.max(...marksScores)) : null;
+  const marksLowest = marksScores.length ? Math.round(Math.min(...marksScores)) : null;
 
   return (
     <div className="td-root">
@@ -590,6 +677,44 @@ export default function TeacherDashboard() {
                 </button>
               </div>
             </div>
+
+            {/* ── NEW: At-Risk Students Alert */}
+            {atRiskStudents.length > 0 && (
+              <div style={{
+                background: 'rgba(231,76,60,0.08)',
+                border: '1px solid #e74c3c',
+                borderLeft: '4px solid #e74c3c',
+                borderRadius: 10, padding: '14px 16px', marginBottom: 16
+              }}>
+                <div style={{ color: '#e74c3c', fontWeight: 700, fontSize: 14, marginBottom: 10 }}>
+                  At-Risk Students — {atRiskStudents.length} below 75% attendance
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {atRiskStudents.map((s, i) => (
+                    <div key={i} style={{
+                      background: 'rgba(231,76,60,0.12)',
+                      border: '1px solid rgba(231,76,60,0.3)',
+                      borderRadius: 8, padding: '6px 12px',
+                      display: 'flex', alignItems: 'center', gap: 8
+                    }}>
+                      <span style={{ color: 'var(--text)', fontSize: 13, fontWeight: 600 }}>
+                        {s.profiles?.full_name || s.roll_number}
+                      </span>
+                      <span style={{
+                        background: s.percentage < 60 ? '#e74c3c' : '#e67e22',
+                        color: '#fff', borderRadius: 4,
+                        padding: '1px 7px', fontSize: 11, fontWeight: 700
+                      }}>
+                        {s.percentage}%
+                      </span>
+                      {s.percentage < 60 && (
+                        <span style={{ color: '#e74c3c', fontSize: 10, fontWeight: 700 }}>DETENTION RISK</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {studentMsg && <p style={{ color: studentMsg.startsWith('Error') ? '#e74c3c' : '#27ae60', fontSize: 13, margin: '8px 0' }}>{studentMsg}</p>}
 
@@ -722,6 +847,7 @@ export default function TeacherDashboard() {
                     </div>
                   </div>
                 ))}
+
                 <div className="td-save-row">
                   {attendanceMsg && (
                     <span className="td-msg" style={{ color: attendanceMsg.startsWith('Error') ? '#e74c3c' : '#27ae60' }}>
@@ -732,6 +858,44 @@ export default function TeacherDashboard() {
                     {attendanceSaving ? 'Saving...' : existingAttendance.length > 0 ? 'Update Attendance' : 'Save Attendance'}
                   </button>
                 </div>
+
+                {/* ── NEW: AI Course Log Generator — shows after attendance is saved */}
+                {attendanceSaved && (
+                  <div style={{
+                    marginTop: 16,
+                    background: 'rgba(232,64,64,0.06)',
+                    border: '1px solid rgba(232,64,64,0.3)',
+                    borderRadius: 10, padding: '14px 16px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10
+                  }}>
+                    <div>
+                      <div style={{ color: 'var(--text)', fontWeight: 600, fontSize: 14 }}>
+                        Generate Course Log
+                      </div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 2 }}>
+                        Let AI suggest what was taught today and save it automatically
+                      </div>
+                      {courseLogMsg && (
+                        <div style={{ color: courseLogMsg.startsWith('Error') ? '#e74c3c' : '#27ae60', fontSize: 12, marginTop: 6, fontWeight: 600 }}>
+                          {courseLogMsg}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={generateCourseLog}
+                      disabled={courseLogGenerating}
+                      style={{
+                        background: courseLogGenerating ? 'rgba(232,64,64,0.3)' : 'linear-gradient(135deg, #e84040, #ff6b35)',
+                        color: '#fff', border: 'none', borderRadius: 8,
+                        padding: '8px 18px', cursor: courseLogGenerating ? 'not-allowed' : 'pointer',
+                        fontSize: 13, fontWeight: 700,
+                        boxShadow: courseLogGenerating ? 'none' : '0 2px 10px rgba(232,64,64,0.4)'
+                      }}
+                    >
+                      {courseLogGenerating ? 'Generating...' : 'Generate with AI'}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -764,6 +928,26 @@ export default function TeacherDashboard() {
                 <input type="number" value={maxScore} onChange={e => setMaxScore(Number(e.target.value))} min={1} max={100} style={{ width: '80px' }} />
               </div>
             </div>
+
+            {/* ── NEW: Marks Analytics */}
+            {existingMarks.length > 0 && marksAvg !== null && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 18 }}>
+                {[
+                  { label: 'Class Average', val: marksAvg, color: marksAvg >= 75 ? '#27ae60' : marksAvg >= 50 ? '#e67e22' : '#e74c3c' },
+                  { label: 'Highest Score', val: marksTop, color: '#9b59b6' },
+                  { label: 'Lowest Score', val: marksLowest, color: marksLowest >= 50 ? '#f1c40f' : '#e74c3c' },
+                ].map(stat => (
+                  <div key={stat.label} style={{
+                    background: 'var(--card-bg-2)', border: `1px solid ${stat.color}33`,
+                    borderLeft: `3px solid ${stat.color}`,
+                    borderRadius: 8, padding: '10px 14px'
+                  }}>
+                    <div style={{ color: 'var(--text-muted)', fontSize: 11, marginBottom: 4 }}>{stat.label}</div>
+                    <div style={{ color: stat.color, fontSize: 22, fontWeight: 700 }}>{stat.val}%</div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {students.length === 0 ? <p className="td-empty">No students found.</p> : (
               <div className="td-marks-list">
