@@ -104,6 +104,29 @@ function AIChatBuddy({ adminName }) {
   );
 }
 
+// ── ARREAR DATA ───────────────────────────────────────────────────────────────
+const INITIAL_ARREAR_STUDENTS = [
+  { id: 1, name: 'Arjun Krishnamurthy', roll: 'BCA2024001', department: 'Bachelor of Computer Applications', year: 'Year 2', arrears: ['Web Technologies', 'Database Management', 'Operating Systems'], attendance: 62, mentor: 'Dr. Priya Sundaram', status: 'pending' },
+  { id: 2, name: 'Ezhil Arasan', roll: 'BSC2024002', department: 'Bachelor of Science', year: 'Year 2', arrears: ['Computer Networks', 'Data Structures'], attendance: 58, mentor: 'Dr. Rahul Yadhav', status: 'pending' },
+  { id: 3, name: 'Aakash Murugan', roll: 'BCA2024002', department: 'Bachelor of Computer Applications', year: 'Year 2', arrears: ['Web Technologies'], attendance: 71, mentor: 'Dr. Priya Sundaram', status: 'pending' },
+  { id: 4, name: 'Karthik Selvam', roll: 'BCA2023011', department: 'Bachelor of Computer Applications', year: 'Year 3', arrears: ['Operating Systems', 'Database Management', 'Computer Networks'], attendance: 55, mentor: 'Dr. Meena Iyer', status: 'pending' },
+  { id: 5, name: 'Preethi Natarajan', roll: 'BCA2023014', department: 'Bachelor of Computer Applications', year: 'Year 3', arrears: ['Data Structures'], attendance: 79, mentor: 'Mr. Suresh Kumar', status: 'resolved', resolvedOn: '05 Mar 2026' },
+  { id: 6, name: 'Rahul Bose', roll: 'BSC2024005', department: 'Bachelor of Science', year: 'Year 2', arrears: ['Web Technologies', 'Operating Systems'], attendance: 64, mentor: 'Dr. Rahul Yadhav', status: 'pending' },
+  { id: 7, name: 'Sneha Krishnan', roll: 'BCA2023008', department: 'Bachelor of Computer Applications', year: 'Year 3', arrears: ['Computer Networks', 'Database Management', 'Data Structures'], attendance: 48, mentor: 'Dr. Priya Sundaram', status: 'pending' },
+  { id: 8, name: 'Dinesh Raj', roll: 'BCA2024006', department: 'Bachelor of Computer Applications', year: 'Year 2', arrears: ['Database Management'], attendance: 83, mentor: 'Dr. Anand Murunga', status: 'pending' },
+  { id: 9, name: 'Kavitha Moorthy', roll: 'BSC2023003', department: 'Bachelor of Science', year: 'Year 3', arrears: ['Operating Systems', 'Web Technologies'], attendance: 67, mentor: 'Dr. Meena Iyer', status: 'resolved', resolvedOn: '01 Mar 2026' },
+  { id: 10, name: 'Vijay Anand', roll: 'BCA2023012', department: 'Bachelor of Computer Applications', year: 'Year 3', arrears: ['Computer Networks', 'Data Structures', 'Web Technologies'], attendance: 51, mentor: 'Mr. Suresh Kumar', status: 'pending' },
+  { id: 11, name: 'Lakshmi Prabha', roll: 'BCA2024008', department: 'Bachelor of Computer Applications', year: 'Year 2', arrears: ['Data Structures'], attendance: 76, mentor: 'Dr. Anand Murunga', status: 'pending' },
+  { id: 12, name: 'Muthu Selvan', roll: 'BSC2024007', department: 'Bachelor of Science', year: 'Year 2', arrears: ['Computer Networks', 'Operating Systems'], attendance: 60, mentor: 'Dr. Rahul Yadhav', status: 'pending' },
+];
+
+function getRisk(s) {
+  if (s.status === 'resolved') return { label: 'RESOLVED', color: '#27ae60', bg: 'rgba(39,174,96,0.15)', border: '4px solid #27ae60' };
+  if (s.arrears.length >= 3) return { label: 'CRITICAL', color: '#e74c3c', bg: 'rgba(231,76,60,0.15)', border: '4px solid #e74c3c' };
+  if (s.arrears.length === 2) return { label: 'HIGH', color: '#f97316', bg: 'rgba(249,115,22,0.15)', border: '4px solid #f97316' };
+  return { label: 'MODERATE', color: '#f1c40f', bg: 'rgba(241,196,15,0.15)', border: '4px solid #f1c40f' };
+}
+
 export default function AdminDashboard() {
   const [profile, setProfile] = useState(null);
   const [stats, setStats] = useState({ students: 0, teachers: 0, departments: 0, subjects: 0 });
@@ -116,7 +139,6 @@ export default function AdminDashboard() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Add student form
   const [showAddStudent, setShowAddStudent] = useState(false);
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentEmail, setNewStudentEmail] = useState('');
@@ -126,7 +148,6 @@ export default function AdminDashboard() {
   const [newStudentDept, setNewStudentDept] = useState('');
   const [studentMsg, setStudentMsg] = useState('');
 
-  // Add teacher form
   const [showAddTeacher, setShowAddTeacher] = useState(false);
   const [newTeacherName, setNewTeacherName] = useState('');
   const [newTeacherEmail, setNewTeacherEmail] = useState('');
@@ -134,43 +155,35 @@ export default function AdminDashboard() {
   const [newTeacherDept, setNewTeacherDept] = useState('');
   const [teacherMsg, setTeacherMsg] = useState('');
 
-  // Edit student/teacher
   const [editStudent, setEditStudent] = useState(null);
   const [editStudentForm, setEditStudentForm] = useState({});
   const [editTeacher, setEditTeacher] = useState(null);
   const [editTeacherForm, setEditTeacherForm] = useState({});
 
-  // Announcement form
   const [annTitle, setAnnTitle] = useState('');
   const [annBody, setAnnBody] = useState('');
   const [annTarget, setAnnTarget] = useState('all');
   const [annSaving, setAnnSaving] = useState(false);
   const [annMsg, setAnnMsg] = useState('');
 
-  // Department form
   const [deptName, setDeptName] = useState('');
   const [deptSaving, setDeptSaving] = useState(false);
   const [deptMsg, setDeptMsg] = useState('');
 
-  // Leave
   const [leaveRequests, setLeaveRequests] = useState([]);
 
-  // Payroll
   const [payrolls, setPayrolls] = useState([]);
   const [showAddPayroll, setShowAddPayroll] = useState(false);
   const [newPayroll, setNewPayroll] = useState({ teacher_id: '', month: '', basic_pay: '', allowances: '', deductions: '', paid: false });
   const [payrollMsg, setPayrollMsg] = useState('');
 
-  // Fees
   const [fees, setFees] = useState([]);
 
-  // Timetable
   const [timetable, setTimetable] = useState([]);
   const [showAddSlot, setShowAddSlot] = useState(false);
   const [newSlot, setNewSlot] = useState({ subject_id: '', day: 'Monday', start_time: '', end_time: '' });
   const [ttMsg, setTtMsg] = useState('');
 
-  // Hall Tickets
   const [exams, setExams] = useState([]);
   const [hallTickets, setHallTickets] = useState([]);
   const [selectedExam, setSelectedExam] = useState('');
@@ -178,6 +191,18 @@ export default function AdminDashboard() {
   const [toast, setToast] = useState(null);
   const [studentSearch, setStudentSearch] = useState('');
   const [teacherSearch, setTeacherSearch] = useState('');
+
+  // Hostel Fees state
+  const [hostelFees, setHostelFees] = useState([]);
+  const [hostelFeeFilter, setHostelFeeFilter] = useState('All');
+
+  // Arrear state
+  const [arrearStudents, setArrearStudents] = useState(INITIAL_ARREAR_STUDENTS);
+  const [arrearFilter, setArrearFilter] = useState('All');
+  const [expandedActId, setExpandedActId] = useState(null);
+  const [actionNotes, setActionNotes] = useState({});
+  const [actionTypes, setActionTypes] = useState({});
+  const [toastMessages, setToastMessages] = useState({});
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -190,7 +215,8 @@ export default function AdminDashboard() {
       const [
         { count: sc }, { count: tc }, { count: dc }, { count: subc },
         { data: studs }, { data: tchs }, { data: depts }, { data: subs }, { data: anns },
-        { data: leaves }, { data: pays }, { data: feesData }, { data: tt }, { data: examsData }
+        { data: leaves }, { data: pays }, { data: feesData }, { data: tt }, { data: examsData },
+        { data: hostelFeesData }
       ] = await Promise.all([
         supabase.from('students').select('*', { count: 'exact', head: true }),
         supabase.from('teachers').select('*', { count: 'exact', head: true }),
@@ -206,6 +232,7 @@ export default function AdminDashboard() {
         supabase.from('fees').select('id, student_id, amount, fee_type, due_date, paid, paid_date, profiles(full_name)'),
         supabase.from('timetable').select('id, day, start_time, end_time, subject_id, subjects(name)').order('day'),
         supabase.from('exams').select('id, title, exam_type, exam_date, start_time, end_time, hall, subjects(name)').order('exam_date'),
+        supabase.from('fees').select('id, student_id, amount, fee_type, due_date, paid, paid_date, profiles(full_name)').eq('fee_type', 'hostel'),
       ]);
 
       setStats({ students: sc || 0, teachers: tc || 0, departments: dc || 0, subjects: subc || 0 });
@@ -219,6 +246,7 @@ export default function AdminDashboard() {
       setFees(feesData || []);
       setTimetable(tt || []);
       setExams(examsData || []);
+      setHostelFees(hostelFeesData || []);
 
       const { data: attRaw } = await supabase.from('attendance').select('status, subjects(name)');
       if (attRaw) {
@@ -268,7 +296,7 @@ export default function AdminDashboard() {
     setStudentMsg('');
     try {
       const newId = crypto.randomUUID();
-      const { error: e1 } = await supabase.from('profiles').insert({ id: newId, full_name: newStudentName.trim(), email: newStudentEmail.trim() || `${newStudentRoll.toLowerCase()}@edusync.com`, role: 'student' });
+      const { error: e1 } = await supabase.from('profiles').insert({ id: newId, full_name: newStudentName.trim(), email: newStudentEmail.trim() || `${newStudentRoll.toLowerCase()}@studyology.com`, role: 'student' });
       if (e1) throw e1;
       const { error: e2 } = await supabase.from('students').insert({ id: newId, department_id: newStudentDept, year: parseInt(newStudentYear), section: newStudentSection, roll_number: newStudentRoll.trim() });
       if (e2) throw e2;
@@ -298,7 +326,7 @@ export default function AdminDashboard() {
     setTeacherMsg('');
     try {
       const newId = crypto.randomUUID();
-      const { error: e1 } = await supabase.from('profiles').insert({ id: newId, full_name: newTeacherName.trim(), email: newTeacherEmail.trim() || `${newTeacherEmpCode.toLowerCase()}@edusync.com`, role: 'teacher' });
+      const { error: e1 } = await supabase.from('profiles').insert({ id: newId, full_name: newTeacherName.trim(), email: newTeacherEmail.trim() || `${newTeacherEmpCode.toLowerCase()}@studyology.com`, role: 'teacher' });
       if (e1) throw e1;
       const { error: e2 } = await supabase.from('teachers').insert({ id: newId, department_id: newTeacherDept, employee_code: newTeacherEmpCode.trim() });
       if (e2) throw e2;
@@ -348,12 +376,9 @@ export default function AdminDashboard() {
   async function addPayroll() {
     if (!newPayroll.teacher_id || !newPayroll.month || !newPayroll.basic_pay) { showToast('Teacher, month and basic pay are required.', 'error'); return; }
     const { error: e } = await supabase.from('payroll').insert({
-      teacher_id: newPayroll.teacher_id,
-      month: newPayroll.month,
-      basic_pay: Number(newPayroll.basic_pay),
-      allowances: Number(newPayroll.allowances || 0),
-      deductions: Number(newPayroll.deductions || 0),
-      paid: newPayroll.paid
+      teacher_id: newPayroll.teacher_id, month: newPayroll.month,
+      basic_pay: Number(newPayroll.basic_pay), allowances: Number(newPayroll.allowances || 0),
+      deductions: Number(newPayroll.deductions || 0), paid: newPayroll.paid
     });
     if (e) { showToast('Error: ' + e.message, 'error'); return; }
     showToast('Payroll added!');
@@ -363,7 +388,22 @@ export default function AdminDashboard() {
 
   async function toggleFee(id, currentPaid) {
     await supabase.from('fees').update({ paid: !currentPaid, paid_date: !currentPaid ? new Date().toISOString().split('T')[0] : null }).eq('id', id);
-    setFees(prev => prev.map(f => f.id === id ? { ...f, paid: !currentPaid } : f));
+    setFees(prev => prev.map(f => f.id === id ? { ...f, paid: !currentPaid, paid_date: !currentPaid ? new Date().toISOString().split('T')[0] : null } : f));
+  }
+
+  async function toggleHostelFee(id, currentPaid) {
+    await supabase.from('fees').update({ paid: !currentPaid, paid_date: !currentPaid ? new Date().toISOString().split('T')[0] : null }).eq('id', id);
+    setHostelFees(prev => prev.map(f => f.id === id ? { ...f, paid: !currentPaid, paid_date: !currentPaid ? new Date().toISOString().split('T')[0] : null } : f));
+  }
+
+  async function markAllHostelPaid() {
+    const today = new Date().toISOString().split('T')[0];
+    const unpaid = hostelFees.filter(f => !f.paid);
+    for (const f of unpaid) {
+      await supabase.from('fees').update({ paid: true, paid_date: today }).eq('id', f.id);
+    }
+    setHostelFees(prev => prev.map(f => ({ ...f, paid: true, paid_date: today })));
+    showToast('All hostel fees marked as paid!');
   }
 
   async function addTimetableSlot() {
@@ -378,6 +418,13 @@ export default function AdminDashboard() {
   async function deleteTimetableSlot(id) {
     await supabase.from('timetable').delete().eq('id', id);
     setTimetable(prev => prev.filter(t => t.id !== id));
+  }
+
+  function resolveArrear(id) {
+    const today = new Date();
+    const formatted = today.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    setArrearStudents(prev => prev.map(s => s.id === id ? { ...s, status: 'resolved', resolvedOn: formatted } : s));
+    setExpandedActId(null);
   }
 
   function showToast(msg, type = 'success') {
@@ -397,6 +444,28 @@ export default function AdminDashboard() {
   if (error) return <div className="ad-error">{error}</div>;
 
   const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  const filteredHostel = hostelFees.filter(f => {
+    if (hostelFeeFilter === 'Paid') return f.paid === true;
+    if (hostelFeeFilter === 'Unpaid') return f.paid === false;
+    return true;
+  });
+
+  const filteredArrear = arrearStudents.filter(s => {
+    if (arrearFilter === 'All') return true;
+    if (arrearFilter === 'Critical') return s.status !== 'resolved' && s.arrears.length >= 3;
+    if (arrearFilter === 'High') return s.status !== 'resolved' && s.arrears.length === 2;
+    if (arrearFilter === 'Moderate') return s.status !== 'resolved' && s.arrears.length === 1;
+    if (arrearFilter === 'Resolved') return s.status === 'resolved';
+    return true;
+  });
+
+  const inputStyle = {
+    width: '100%', padding: '8px 12px', borderRadius: 6,
+    border: '1px solid var(--border, #2a2a3e)',
+    background: 'var(--card-bg, #1a1a2e)', color: 'var(--text, #fff)',
+    fontSize: 13, outline: 'none', boxSizing: 'border-box'
+  };
 
   return (
     <div className="ad-root">
@@ -435,6 +504,8 @@ export default function AdminDashboard() {
           { id: 'fees', label: 'Fees' },
           { id: 'timetable', label: 'Timetable' },
           { id: 'halltickets', label: 'Hall Tickets' },
+          { id: 'hostelfees', label: 'Hostel Fees' },
+          { id: 'arrear', label: 'Arrear' },
         ].map(t => (
           <button key={t.id} className={`ad-tab ${activeTab === t.id ? 'active' : ''}`} onClick={() => setActiveTab(t.id)}>
             {t.label}
@@ -447,79 +518,72 @@ export default function AdminDashboard() {
         {/* OVERVIEW */}
         {activeTab === 'overview' && (
           <div>
-          <div className="ad-grid-2">
-            <div className="ad-panel">
-              <div className="ad-panel-header">
-                <h2>Recent Announcements</h2>
-                <span className="ad-badge">{announcements.length} total</span>
-              </div>
-              <div className="ad-ann-preview">
-                {announcements.slice(0, 5).map(a => (
-                  <div key={a.id} className="ad-ann-preview-item">
-                    <div className="ad-ann-dot" />
-                    <div>
-                      <div className="ad-ann-title">{a.title}</div>
-                      <div className="ad-ann-meta">
-                        <span className={`ad-target-pill ${a.role_target}`}>{a.role_target}</span>
-                        <span className="ad-muted">{timeAgo(a.created_at)}</span>
+            <div className="ad-grid-2">
+              <div className="ad-panel">
+                <div className="ad-panel-header">
+                  <h2>Recent Announcements</h2>
+                  <span className="ad-badge">{announcements.length} total</span>
+                </div>
+                <div className="ad-ann-preview">
+                  {announcements.slice(0, 5).map(a => (
+                    <div key={a.id} className="ad-ann-preview-item">
+                      <div className="ad-ann-dot" />
+                      <div>
+                        <div className="ad-ann-title">{a.title}</div>
+                        <div className="ad-ann-meta">
+                          <span className={`ad-target-pill ${a.role_target}`}>{a.role_target}</span>
+                          <span className="ad-muted">{timeAgo(a.created_at)}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-                {announcements.length === 0 && <p className="ad-empty">No announcements yet.</p>}
+                  ))}
+                  {announcements.length === 0 && <p className="ad-empty">No announcements yet.</p>}
+                </div>
+              </div>
+              <div className="ad-panel">
+                <div className="ad-panel-header">
+                  <h2>Subjects</h2>
+                  <span className="ad-badge">{subjects.length} total</span>
+                </div>
+                <div className="ad-subjects-list">
+                  {subjects.map(s => (
+                    <div key={s.id} className="ad-subject-row">
+                      <div className="ad-subject-name">{s.name}</div>
+                      <div className="ad-subject-meta"><span>Year {s.year} · Sec {s.section}</span></div>
+                    </div>
+                  ))}
+                  {subjects.length === 0 && <p className="ad-empty">No subjects.</p>}
+                </div>
               </div>
             </div>
-            <div className="ad-panel">
-              <div className="ad-panel-header">
-                <h2>Subjects</h2>
-                <span className="ad-badge">{subjects.length} total</span>
+            <div className="ad-grid-2" style={{ marginTop: 24 }}>
+              <div className="ad-panel">
+                <div className="ad-panel-header"><h2>Attendance by Subject</h2></div>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={attendanceChart} margin={{ top: 10, right: 10, left: -20, bottom: 50 }}>
+                    <XAxis dataKey="name" tick={{ fill: '#aaa', fontSize: 11 }} angle={-30} textAnchor="end" interval={0} />
+                    <YAxis tick={{ fill: '#aaa', fontSize: 11 }} />
+                    <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid #2a2a3e', color: '#fff' }} />
+                    <Bar dataKey="present" fill="#27ae60" radius={[4,4,0,0]} name="Present" />
+                    <Bar dataKey="absent" fill="#e84040" radius={[4,4,0,0]} name="Absent" />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
-              <div className="ad-subjects-list">
-                {subjects.map(s => (
-                  <div key={s.id} className="ad-subject-row">
-                    <div className="ad-subject-name">{s.name}</div>
-                    <div className="ad-subject-meta"><span>Year {s.year} · Sec {s.section}</span></div>
-                  </div>
-                ))}
-                {subjects.length === 0 && <p className="ad-empty">No subjects.</p>}
+              <div className="ad-panel">
+                <div className="ad-panel-header"><h2>Fees Overview</h2></div>
+                <ResponsiveContainer width="100%" height={220}>
+                  <PieChart>
+                    <Pie data={[{ name: 'Paid', value: fees.filter(f => f.paid).length }, { name: 'Unpaid', value: fees.filter(f => !f.paid).length }]}
+                      cx="50%" cy="50%" innerRadius={60} outerRadius={90} dataKey="value" paddingAngle={4}>
+                      <Cell fill="#27ae60" />
+                      <Cell fill="#e84040" />
+                    </Pie>
+                    <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid #2a2a3e', color: '#fff' }} />
+                    <Legend formatter={(v) => <span style={{ color: '#aaa', fontSize: 13 }}>{v}</span>} />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
             </div>
-          </div>
-
-          <div className="ad-grid-2" style={{ marginTop: 24 }}>
-            <div className="ad-panel">
-              <div className="ad-panel-header"><h2>Attendance by Subject</h2></div>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={attendanceChart} margin={{ top: 10, right: 10, left: -20, bottom: 50 }}>
-                  <XAxis dataKey="name" tick={{ fill: '#aaa', fontSize: 11 }} angle={-30} textAnchor="end" interval={0} />
-                  <YAxis tick={{ fill: '#aaa', fontSize: 11 }} />
-                  <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid #2a2a3e', color: '#fff' }} />
-                  <Bar dataKey="present" fill="#27ae60" radius={[4,4,0,0]} name="Present" />
-                  <Bar dataKey="absent" fill="#e84040" radius={[4,4,0,0]} name="Absent" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="ad-panel">
-              <div className="ad-panel-header"><h2>Fees Overview</h2></div>
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'Paid', value: fees.filter(f => f.paid).length },
-                      { name: 'Unpaid', value: fees.filter(f => !f.paid).length }
-                    ]}
-                    cx="50%" cy="50%" innerRadius={60} outerRadius={90}
-                    dataKey="value" paddingAngle={4}
-                  >
-                    <Cell fill="#27ae60" />
-                    <Cell fill="#e84040" />
-                  </Pie>
-                  <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid #2a2a3e', color: '#fff' }} />
-                  <Legend formatter={(v) => <span style={{ color: '#aaa', fontSize: 13 }}>{v}</span>} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
           </div>
         )}
 
@@ -536,20 +600,16 @@ export default function AdminDashboard() {
                   </button>
                 </div>
               </div>
-              <input
-                placeholder="Search by name or roll number..."
-                value={studentSearch}
-                onChange={e => setStudentSearch(e.target.value)}
-                style={{ width: '100%', marginBottom: 10, padding: '7px 12px', borderRadius: 8, border: '1px solid #2a2a3e', background: '#0f0f1a', color: 'var(--text)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
-              />
+              <input placeholder="Search by name or roll number..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)}
+                style={{ width: '100%', marginBottom: 10, padding: '7px 12px', borderRadius: 8, border: '1px solid #2a2a3e', background: '#0f0f1a', color: 'var(--text)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
               {showAddStudent && (
                 <div className="ad-form" style={{ marginBottom: 12 }}>
                   <div className="ad-form-group"><label>Full Name *</label><input placeholder="e.g. Arjun Kumar" value={newStudentName} onChange={e => setNewStudentName(e.target.value)} /></div>
                   <div className="ad-form-group"><label>Email</label><input placeholder="auto-generated if empty" value={newStudentEmail} onChange={e => setNewStudentEmail(e.target.value)} /></div>
                   <div className="ad-form-group"><label>Roll Number *</label><input placeholder="e.g. BCA2024007" value={newStudentRoll} onChange={e => setNewStudentRoll(e.target.value)} /></div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-                    <div className="ad-form-group"><label>Year</label><select value={newStudentYear} onChange={e => setNewStudentYear(e.target.value)}>{['1', '2', '3'].map(y => <option key={y}>{y}</option>)}</select></div>
-                    <div className="ad-form-group"><label>Section</label><select value={newStudentSection} onChange={e => setNewStudentSection(e.target.value)}>{['A', 'B', 'C'].map(s => <option key={s}>{s}</option>)}</select></div>
+                    <div className="ad-form-group"><label>Year</label><select value={newStudentYear} onChange={e => setNewStudentYear(e.target.value)}>{['1','2','3'].map(y => <option key={y}>{y}</option>)}</select></div>
+                    <div className="ad-form-group"><label>Section</label><select value={newStudentSection} onChange={e => setNewStudentSection(e.target.value)}>{['A','B','C'].map(s => <option key={s}>{s}</option>)}</select></div>
                     <div className="ad-form-group"><label>Department *</label><select value={newStudentDept} onChange={e => setNewStudentDept(e.target.value)}><option value="">Select</option>{departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
                   </div>
                   <div className="ad-form-footer">
@@ -561,21 +621,14 @@ export default function AdminDashboard() {
               <table className="ad-table">
                 <thead><tr><th>Roll No</th><th>Name</th><th>Dept</th><th>Year</th><th>Action</th></tr></thead>
                 <tbody>
-                  {students.filter(s =>
-                    s.profiles?.full_name?.toLowerCase().includes(studentSearch.toLowerCase()) ||
-                    s.roll_number?.toLowerCase().includes(studentSearch.toLowerCase())
-                  ).map(s => (
+                  {students.filter(s => s.profiles?.full_name?.toLowerCase().includes(studentSearch.toLowerCase()) || s.roll_number?.toLowerCase().includes(studentSearch.toLowerCase())).map(s => (
                     <tr key={s.id}>
                       {editStudent?.id === s.id ? (
                         <>
                           <td><input className="td-marks-input" value={editStudentForm.roll_number} onChange={e => setEditStudentForm(f => ({ ...f, roll_number: e.target.value }))} style={{ width: 110 }} /></td>
                           <td><input className="td-marks-input" value={editStudentForm.full_name} onChange={e => setEditStudentForm(f => ({ ...f, full_name: e.target.value }))} style={{ width: 120 }} /></td>
                           <td className="ad-muted">{s.departments?.name || '—'}</td>
-                          <td>
-                            <select className="td-marks-input" value={editStudentForm.year} onChange={e => setEditStudentForm(f => ({ ...f, year: e.target.value }))} style={{ width: 50 }}>
-                              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-                            </select>
-                          </td>
+                          <td><select className="td-marks-input" value={editStudentForm.year} onChange={e => setEditStudentForm(f => ({ ...f, year: e.target.value }))} style={{ width: 50 }}><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></td>
                           <td style={{ display: 'flex', gap: 6 }}>
                             <button onClick={handleEditStudentSave} style={{ background: '#27ae60', color: '#fff', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Save</button>
                             <button onClick={() => setEditStudent(null)} style={{ background: 'var(--card-bg-2)', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Cancel</button>
@@ -588,10 +641,8 @@ export default function AdminDashboard() {
                           <td className="ad-muted">{s.departments?.name || '—'}</td>
                           <td>Y{s.year}-{s.section}</td>
                           <td style={{ display: 'flex', gap: 6 }}>
-                            <button onClick={() => { setEditStudent(s); setEditStudentForm({ full_name: s.profiles?.full_name || '', roll_number: s.roll_number, year: String(s.year), section: s.section }); setStudentMsg(''); }}
-                              style={{ background: 'rgba(39,174,96,0.15)', color: '#27ae60', border: '1px solid #27ae60', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Edit</button>
-                            <button onClick={() => deleteStudent(s.id)}
-                              style={{ background: 'rgba(231,76,60,0.15)', color: '#e74c3c', border: '1px solid #e74c3c', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Delete</button>
+                            <button onClick={() => { setEditStudent(s); setEditStudentForm({ full_name: s.profiles?.full_name || '', roll_number: s.roll_number, year: String(s.year), section: s.section }); setStudentMsg(''); }} style={{ background: 'rgba(39,174,96,0.15)', color: '#27ae60', border: '1px solid #27ae60', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Edit</button>
+                            <button onClick={() => deleteStudent(s.id)} style={{ background: 'rgba(231,76,60,0.15)', color: '#e74c3c', border: '1px solid #e74c3c', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Delete</button>
                           </td>
                         </>
                       )}
@@ -612,12 +663,8 @@ export default function AdminDashboard() {
                   </button>
                 </div>
               </div>
-              <input
-                placeholder="Search by name or emp code..."
-                value={teacherSearch}
-                onChange={e => setTeacherSearch(e.target.value)}
-                style={{ width: '100%', marginBottom: 10, padding: '7px 12px', borderRadius: 8, border: '1px solid #2a2a3e', background: '#0f0f1a', color: 'var(--text)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
-              />
+              <input placeholder="Search by name or emp code..." value={teacherSearch} onChange={e => setTeacherSearch(e.target.value)}
+                style={{ width: '100%', marginBottom: 10, padding: '7px 12px', borderRadius: 8, border: '1px solid #2a2a3e', background: '#0f0f1a', color: 'var(--text)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
               {showAddTeacher && (
                 <div className="ad-form" style={{ marginBottom: 12 }}>
                   <div className="ad-form-group"><label>Full Name *</label><input placeholder="e.g. Dr. Ravi Kumar" value={newTeacherName} onChange={e => setNewTeacherName(e.target.value)} /></div>
@@ -635,10 +682,7 @@ export default function AdminDashboard() {
               <table className="ad-table">
                 <thead><tr><th>Emp Code</th><th>Name</th><th>Email</th><th>Dept</th><th>Action</th></tr></thead>
                 <tbody>
-                  {teachers.filter(t =>
-                    t.profiles?.full_name?.toLowerCase().includes(teacherSearch.toLowerCase()) ||
-                    t.employee_code?.toLowerCase().includes(teacherSearch.toLowerCase())
-                  ).map(t => (
+                  {teachers.filter(t => t.profiles?.full_name?.toLowerCase().includes(teacherSearch.toLowerCase()) || t.employee_code?.toLowerCase().includes(teacherSearch.toLowerCase())).map(t => (
                     <tr key={t.id}>
                       {editTeacher?.id === t.id ? (
                         <>
@@ -658,10 +702,8 @@ export default function AdminDashboard() {
                           <td className="ad-muted">{t.profiles?.email || '—'}</td>
                           <td className="ad-muted">{t.departments?.name || '—'}</td>
                           <td style={{ display: 'flex', gap: 6 }}>
-                            <button onClick={() => { setEditTeacher(t); setEditTeacherForm({ full_name: t.profiles?.full_name || '', employee_code: t.employee_code || '' }); setTeacherMsg(''); }}
-                              style={{ background: 'rgba(39,174,96,0.15)', color: '#27ae60', border: '1px solid #27ae60', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Edit</button>
-                            <button onClick={() => deleteTeacher(t.id)}
-                              style={{ background: 'rgba(231,76,60,0.15)', color: '#e74c3c', border: '1px solid #e74c3c', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Delete</button>
+                            <button onClick={() => { setEditTeacher(t); setEditTeacherForm({ full_name: t.profiles?.full_name || '', employee_code: t.employee_code || '' }); setTeacherMsg(''); }} style={{ background: 'rgba(39,174,96,0.15)', color: '#27ae60', border: '1px solid #27ae60', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Edit</button>
+                            <button onClick={() => deleteTeacher(t.id)} style={{ background: 'rgba(231,76,60,0.15)', color: '#e74c3c', border: '1px solid #e74c3c', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Delete</button>
                           </td>
                         </>
                       )}
@@ -754,18 +796,13 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* LEAVE APPROVAL */}
+        {/* LEAVE */}
         {activeTab === 'leave' && (
           <div className="ad-panel">
-            <div className="ad-panel-header">
-              <h2>Leave Approval</h2>
-              <span className="ad-badge">{leaveRequests.length} requests</span>
-            </div>
+            <div className="ad-panel-header"><h2>Leave Approval</h2><span className="ad-badge">{leaveRequests.length} requests</span></div>
             {leaveRequests.length === 0 ? <p className="ad-empty">No leave requests.</p> : (
               <table className="ad-table">
-                <thead>
-                  <tr><th>Teacher</th><th>Type</th><th>From</th><th>To</th><th>Reason</th><th>Status</th><th>Remark</th><th>Action</th></tr>
-                </thead>
+                <thead><tr><th>Teacher</th><th>Type</th><th>From</th><th>To</th><th>Reason</th><th>Status</th><th>Remark</th><th>Action</th></tr></thead>
                 <tbody>
                   {leaveRequests.map(l => (
                     <tr key={l.id}>
@@ -775,24 +812,14 @@ export default function AdminDashboard() {
                       <td>{l.to_date}</td>
                       <td className="ad-muted">{l.reason}</td>
                       <td>
-                        <span style={{
-                          padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600,
-                          background: l.status === 'Approved' ? 'rgba(39,174,96,0.15)' : l.status === 'Rejected' ? 'rgba(231,76,60,0.15)' : 'rgba(241,196,15,0.15)',
-                          color: l.status === 'Approved' ? '#27ae60' : l.status === 'Rejected' ? '#e74c3c' : '#f1c40f'
-                        }}>{l.status}</span>
+                        <span style={{ padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: l.status === 'Approved' ? 'rgba(39,174,96,0.15)' : l.status === 'Rejected' ? 'rgba(231,76,60,0.15)' : 'rgba(241,196,15,0.15)', color: l.status === 'Approved' ? '#27ae60' : l.status === 'Rejected' ? '#e74c3c' : '#f1c40f' }}>{l.status}</span>
                       </td>
-                      <td>
-                        <input className="td-marks-input" placeholder="Add remark..." defaultValue={l.admin_remark || ''}
-                          onBlur={async e => { await supabase.from('leave_requests').update({ admin_remark: e.target.value }).eq('id', l.id); }}
-                          style={{ width: 140 }} />
-                      </td>
+                      <td><input className="td-marks-input" placeholder="Add remark..." defaultValue={l.admin_remark || ''} onBlur={async e => { await supabase.from('leave_requests').update({ admin_remark: e.target.value }).eq('id', l.id); }} style={{ width: 140 }} /></td>
                       <td style={{ display: 'flex', gap: 6 }}>
                         {l.status === 'Pending' && (
                           <>
-                            <button onClick={() => updateLeaveStatus(l.id, 'Approved', l.admin_remark)}
-                              style={{ background: 'rgba(39,174,96,0.15)', color: '#27ae60', border: '1px solid #27ae60', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Approve</button>
-                            <button onClick={() => updateLeaveStatus(l.id, 'Rejected', l.admin_remark)}
-                              style={{ background: 'rgba(231,76,60,0.15)', color: '#e74c3c', border: '1px solid #e74c3c', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Reject</button>
+                            <button onClick={() => updateLeaveStatus(l.id, 'Approved', l.admin_remark)} style={{ background: 'rgba(39,174,96,0.15)', color: '#27ae60', border: '1px solid #27ae60', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Approve</button>
+                            <button onClick={() => updateLeaveStatus(l.id, 'Rejected', l.admin_remark)} style={{ background: 'rgba(231,76,60,0.15)', color: '#e74c3c', border: '1px solid #e74c3c', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Reject</button>
                           </>
                         )}
                       </td>
@@ -811,21 +838,13 @@ export default function AdminDashboard() {
               <h2>Staff Payroll</h2>
               <div style={{ display: 'flex', gap: 8 }}>
                 <span className="ad-badge">{payrolls.length} records</span>
-                <button style={{ padding: '4px 14px', fontSize: 12, background: '#e84040', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }} onClick={() => setShowAddPayroll(p => !p)}>
-                  {showAddPayroll ? 'Cancel' : '+ Add'}
-                </button>
+                <button style={{ padding: '4px 14px', fontSize: 12, background: '#e84040', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }} onClick={() => setShowAddPayroll(p => !p)}>{showAddPayroll ? 'Cancel' : '+ Add'}</button>
               </div>
             </div>
             {showAddPayroll && (
               <div className="ad-form" style={{ marginBottom: 16 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  <div className="ad-form-group">
-                    <label>Teacher *</label>
-                    <select value={newPayroll.teacher_id} onChange={e => setNewPayroll(p => ({ ...p, teacher_id: e.target.value }))}>
-                      <option value="">Select Teacher</option>
-                      {teachers.map(t => <option key={t.id} value={t.id}>{t.profiles?.full_name}</option>)}
-                    </select>
-                  </div>
+                  <div className="ad-form-group"><label>Teacher *</label><select value={newPayroll.teacher_id} onChange={e => setNewPayroll(p => ({ ...p, teacher_id: e.target.value }))}><option value="">Select Teacher</option>{teachers.map(t => <option key={t.id} value={t.id}>{t.profiles?.full_name}</option>)}</select></div>
                   <div className="ad-form-group"><label>Month *</label><input placeholder="e.g. April 2026" value={newPayroll.month} onChange={e => setNewPayroll(p => ({ ...p, month: e.target.value }))} /></div>
                   <div className="ad-form-group"><label>Basic Pay *</label><input type="number" placeholder="e.g. 55000" value={newPayroll.basic_pay} onChange={e => setNewPayroll(p => ({ ...p, basic_pay: e.target.value }))} /></div>
                   <div className="ad-form-group"><label>Allowances</label><input type="number" placeholder="e.g. 22000" value={newPayroll.allowances} onChange={e => setNewPayroll(p => ({ ...p, allowances: e.target.value }))} /></div>
@@ -841,6 +860,18 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
+            <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+              {[
+                { label: 'Total Records', value: payrolls.length, color: '#4f46e5' },
+                { label: 'Total Paid', value: `Rs. ${payrolls.filter(p => p.paid).reduce((s, p) => s + (p.net_pay || 0), 0).toLocaleString('en-IN')}`, color: '#27ae60' },
+                { label: 'Total Pending', value: `Rs. ${payrolls.filter(p => !p.paid).reduce((s, p) => s + (p.net_pay || 0), 0).toLocaleString('en-IN')}`, color: '#e84040' },
+              ].map(stat => (
+                <div key={stat.label} style={{ flex: 1, background: 'var(--card-bg-2)', border: `1px solid ${stat.color}40`, borderRadius: 10, padding: '12px 16px' }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{stat.label}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                </div>
+              ))}
+            </div>
             <table className="ad-table">
               <thead><tr><th>Teacher</th><th>Month</th><th>Basic Pay</th><th>Allowances</th><th>Deductions</th><th>Net Pay</th><th>Status</th></tr></thead>
               <tbody>
@@ -852,11 +883,7 @@ export default function AdminDashboard() {
                     <td>Rs. {p.allowances?.toLocaleString('en-IN')}</td>
                     <td>Rs. {p.deductions?.toLocaleString('en-IN')}</td>
                     <td>Rs. {p.net_pay?.toLocaleString('en-IN')}</td>
-                    <td>
-                      <span style={{ padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: p.paid ? 'rgba(39,174,96,0.15)' : 'rgba(241,196,15,0.15)', color: p.paid ? '#27ae60' : '#f1c40f' }}>
-                        {p.paid ? 'Paid' : 'Pending'}
-                      </span>
-                    </td>
+                    <td><span style={{ padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: p.paid ? 'rgba(39,174,96,0.15)' : 'rgba(241,196,15,0.15)', color: p.paid ? '#27ae60' : '#f1c40f' }}>{p.paid ? 'Paid' : 'Pending'}</span></td>
                   </tr>
                 ))}
                 {payrolls.length === 0 && <tr><td colSpan={7} className="ad-empty">No payroll records.</td></tr>}
@@ -868,10 +895,7 @@ export default function AdminDashboard() {
         {/* FEES */}
         {activeTab === 'fees' && (
           <div className="ad-panel">
-            <div className="ad-panel-header">
-              <h2>Fees Management</h2>
-              <span className="ad-badge">{fees.length} records</span>
-            </div>
+            <div className="ad-panel-header"><h2>Fees Management</h2><span className="ad-badge">{fees.length} records</span></div>
             <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
               {[
                 { label: 'Total Fees', value: `Rs. ${fees.reduce((s, f) => s + (f.amount || 0), 0).toLocaleString('en-IN')}`, color: '#4f46e5' },
@@ -893,17 +917,8 @@ export default function AdminDashboard() {
                     <td>{f.fee_type}</td>
                     <td>Rs. {f.amount?.toLocaleString('en-IN')}</td>
                     <td>{f.due_date}</td>
-                    <td>
-                      <span style={{ padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: f.paid ? 'rgba(39,174,96,0.15)' : 'rgba(231,76,60,0.15)', color: f.paid ? '#27ae60' : '#e74c3c' }}>
-                        {f.paid ? 'Paid' : 'Unpaid'}
-                      </span>
-                    </td>
-                    <td>
-                      <button onClick={() => toggleFee(f.id, f.paid)}
-                        style={{ background: f.paid ? 'rgba(231,76,60,0.15)' : 'rgba(39,174,96,0.15)', color: f.paid ? '#e74c3c' : '#27ae60', border: `1px solid ${f.paid ? '#e74c3c' : '#27ae60'}`, borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>
-                        {f.paid ? 'Mark Unpaid' : 'Mark Paid'}
-                      </button>
-                    </td>
+                    <td><span style={{ padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: f.paid ? 'rgba(39,174,96,0.15)' : 'rgba(231,76,60,0.15)', color: f.paid ? '#27ae60' : '#e74c3c' }}>{f.paid ? 'Paid' : 'Unpaid'}</span></td>
+                    <td><button onClick={() => toggleFee(f.id, f.paid)} style={{ background: f.paid ? 'rgba(231,76,60,0.15)' : 'rgba(39,174,96,0.15)', color: f.paid ? '#e74c3c' : '#27ae60', border: `1px solid ${f.paid ? '#e74c3c' : '#27ae60'}`, borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>{f.paid ? 'Mark Unpaid' : 'Mark Paid'}</button></td>
                   </tr>
                 ))}
                 {fees.length === 0 && <tr><td colSpan={6} className="ad-empty">No fee records.</td></tr>}
@@ -919,27 +934,14 @@ export default function AdminDashboard() {
               <h2>Timetable</h2>
               <div style={{ display: 'flex', gap: 8 }}>
                 <span className="ad-badge">{timetable.length} slots</span>
-                <button style={{ padding: '4px 14px', fontSize: 12, background: '#e84040', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }} onClick={() => setShowAddSlot(s => !s)}>
-                  {showAddSlot ? 'Cancel' : '+ Add Slot'}
-                </button>
+                <button style={{ padding: '4px 14px', fontSize: 12, background: '#e84040', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }} onClick={() => setShowAddSlot(s => !s)}>{showAddSlot ? 'Cancel' : '+ Add Slot'}</button>
               </div>
             </div>
             {showAddSlot && (
               <div className="ad-form" style={{ marginBottom: 16 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10 }}>
-                  <div className="ad-form-group">
-                    <label>Subject *</label>
-                    <select value={newSlot.subject_id} onChange={e => setNewSlot(s => ({ ...s, subject_id: e.target.value }))}>
-                      <option value="">Select Subject</option>
-                      {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                    </select>
-                  </div>
-                  <div className="ad-form-group">
-                    <label>Day *</label>
-                    <select value={newSlot.day} onChange={e => setNewSlot(s => ({ ...s, day: e.target.value }))}>
-                      {DAYS.map(d => <option key={d}>{d}</option>)}
-                    </select>
-                  </div>
+                  <div className="ad-form-group"><label>Subject *</label><select value={newSlot.subject_id} onChange={e => setNewSlot(s => ({ ...s, subject_id: e.target.value }))}><option value="">Select Subject</option>{subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
+                  <div className="ad-form-group"><label>Day *</label><select value={newSlot.day} onChange={e => setNewSlot(s => ({ ...s, day: e.target.value }))}>{DAYS.map(d => <option key={d}>{d}</option>)}</select></div>
                   <div className="ad-form-group"><label>Start Time *</label><input type="time" value={newSlot.start_time} onChange={e => setNewSlot(s => ({ ...s, start_time: e.target.value }))} /></div>
                   <div className="ad-form-group"><label>End Time *</label><input type="time" value={newSlot.end_time} onChange={e => setNewSlot(s => ({ ...s, end_time: e.target.value }))} /></div>
                 </div>
@@ -952,9 +954,7 @@ export default function AdminDashboard() {
             {timetable.length === 0 && <p className="ad-empty">No timetable slots.</p>}
             {DAYS.filter(day => timetable.some(t => t.day === day)).map(day => (
               <div key={day} style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#e84040', letterSpacing: 1, marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid #2a2a3e' }}>
-                  {day.toUpperCase()}
-                </div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#e84040', letterSpacing: 1, marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid #2a2a3e' }}>{day.toUpperCase()}</div>
                 <table className="ad-table">
                   <thead><tr><th>Subject</th><th>Start</th><th>End</th><th>Action</th></tr></thead>
                   <tbody>
@@ -963,10 +963,7 @@ export default function AdminDashboard() {
                         <td>{t.subjects?.name || '—'}</td>
                         <td>{t.start_time?.slice(0, 5)}</td>
                         <td>{t.end_time?.slice(0, 5)}</td>
-                        <td>
-                          <button onClick={() => deleteTimetableSlot(t.id)}
-                            style={{ background: 'rgba(231,76,60,0.15)', color: '#e74c3c', border: '1px solid #e74c3c', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Delete</button>
-                        </td>
+                        <td><button onClick={() => deleteTimetableSlot(t.id)} style={{ background: 'rgba(231,76,60,0.15)', color: '#e74c3c', border: '1px solid #e74c3c', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>Delete</button></td>
                       </tr>
                     ))}
                   </tbody>
@@ -979,10 +976,7 @@ export default function AdminDashboard() {
         {/* HALL TICKETS */}
         {activeTab === 'halltickets' && (
           <div className="ad-panel">
-            <div className="ad-panel-header">
-              <h2>Hall Tickets</h2>
-              <span className="ad-badge">{exams.length} exams</span>
-            </div>
+            <div className="ad-panel-header"><h2>Hall Tickets</h2><span className="ad-badge">{exams.length} exams</span></div>
             <div className="ad-form-group" style={{ marginBottom: 16, maxWidth: 360 }}>
               <label style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 6, display: 'block' }}>Select Exam</label>
               <select value={selectedExam} onChange={e => { setSelectedExam(e.target.value); if (e.target.value) loadHallTickets(e.target.value); }}>
@@ -1000,17 +994,174 @@ export default function AdminDashboard() {
                       <td>{h.profiles?.full_name || '—'}</td>
                       <td>{h.hall_number}</td>
                       <td>{h.seat_number}</td>
-                      <td>
-                        <span style={{ padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: h.issued ? 'rgba(39,174,96,0.15)' : 'rgba(241,196,15,0.15)', color: h.issued ? '#27ae60' : '#f1c40f' }}>
-                          {h.issued ? 'Issued' : 'Pending'}
-                        </span>
-                      </td>
+                      <td><span style={{ padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: h.issued ? 'rgba(39,174,96,0.15)' : 'rgba(241,196,15,0.15)', color: h.issued ? '#27ae60' : '#f1c40f' }}>{h.issued ? 'Issued' : 'Pending'}</span></td>
                     </tr>
                   ))}
                   {hallTickets.length === 0 && <tr><td colSpan={5} className="ad-empty">No hall tickets for this exam.</td></tr>}
                 </tbody>
               </table>
             )}
+          </div>
+        )}
+
+        {/* HOSTEL FEES */}
+        {activeTab === 'hostelfees' && (
+          <div className="ad-panel">
+            <div className="ad-panel-header">
+              <h2>Hostel Fees Management</h2>
+              <span className="ad-badge">{hostelFees.length} total</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {['All', 'Paid', 'Unpaid'].map(f => (
+                  <button key={f} onClick={() => setHostelFeeFilter(f)} style={{
+                    padding: '5px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    background: hostelFeeFilter === f ? '#e84040' : 'transparent',
+                    color: hostelFeeFilter === f ? '#fff' : 'var(--text-muted, #aaa)',
+                    border: hostelFeeFilter === f ? '1px solid #e84040' : '1px solid var(--border, #2a2a3e)',
+                  }}>{f}</button>
+                ))}
+              </div>
+              <span className="ad-muted" style={{ fontSize: 13 }}>
+                {hostelFees.filter(f => f.paid).length} of {hostelFees.length} students have paid
+              </span>
+              <button onClick={markAllHostelPaid} style={{ padding: '5px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer', background: '#27ae60', color: '#fff', border: 'none' }}>
+                ✓ Mark All Paid
+              </button>
+            </div>
+            <table className="ad-table">
+              <thead><tr><th>Student</th><th>Amount</th><th>Due Date</th><th>Paid Date</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody>
+                {filteredHostel.map(f => (
+                  <tr key={f.id}>
+                    <td>{f.profiles?.full_name || '—'}</td>
+                    <td>Rs. {f.amount?.toLocaleString('en-IN')}</td>
+                    <td>{f.due_date || '—'}</td>
+                    <td>{f.paid_date || '—'}</td>
+                    <td><span style={{ padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: f.paid ? 'rgba(39,174,96,0.15)' : 'rgba(231,76,60,0.15)', color: f.paid ? '#27ae60' : '#e74c3c' }}>{f.paid ? 'Paid' : 'Unpaid'}</span></td>
+                    <td><button onClick={() => toggleHostelFee(f.id, f.paid)} style={{ background: f.paid ? 'rgba(231,76,60,0.15)' : 'rgba(39,174,96,0.15)', color: f.paid ? '#e74c3c' : '#27ae60', border: `1px solid ${f.paid ? '#e74c3c' : '#27ae60'}`, borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontSize: 12 }}>{f.paid ? 'Mark Unpaid' : 'Mark Paid'}</button></td>
+                  </tr>
+                ))}
+                {filteredHostel.length === 0 && <tr><td colSpan={6} className="ad-empty">No hostel fee records found.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* ARREAR MANAGEMENT */}
+        {activeTab === 'arrear' && (
+          <div>
+            {/* Stats */}
+            <div className="ad-stats" style={{ marginBottom: 20 }}>
+              {[
+                { val: arrearStudents.length, label: 'TOTAL ARREAR STUDENTS' },
+                { val: arrearStudents.filter(s => s.status !== 'resolved' && s.arrears.length >= 3).length, label: 'CRITICAL' },
+                { val: arrearStudents.filter(s => s.status !== 'resolved' && s.arrears.length === 2).length, label: 'HIGH' },
+                { val: arrearStudents.filter(s => s.status === 'resolved').length, label: 'RESOLVED' },
+              ].map(s => (
+                <div className="ad-stat-card" key={s.label}>
+                  <div className="ad-stat-val">{s.val}</div>
+                  <div className="ad-stat-label">{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Filters */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 20, flexWrap: 'wrap' }}>
+              {['All', 'Critical', 'High', 'Moderate', 'Resolved'].map(f => (
+                <button key={f} onClick={() => setArrearFilter(f)} style={{
+                  padding: '5px 18px', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                  background: arrearFilter === f ? '#e84040' : 'transparent',
+                  color: arrearFilter === f ? '#fff' : 'var(--text-muted, #aaa)',
+                  border: arrearFilter === f ? '1px solid #e84040' : '1px solid var(--border, #2a2a3e)',
+                }}>{f}</button>
+              ))}
+            </div>
+
+            {/* Cards */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {filteredArrear.map(s => {
+                const risk = getRisk(s);
+                return (
+                  <div key={s.id} style={{
+                    background: s.status === 'resolved' ? 'rgba(39,174,96,0.03)' : 'var(--card-bg, #1a1a2e)',
+                    border: '1px solid var(--border, #2a2a3e)',
+                    borderLeft: risk.border, borderRadius: 12, padding: 20,
+                  }}>
+                    {/* Zone 1 — Identity */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--text, #fff)', marginBottom: 3 }}>{s.name}</div>
+                        <div className="ad-roll" style={{ fontSize: 12, marginBottom: 3 }}>{s.roll}</div>
+                        <div className="ad-muted" style={{ fontSize: 12, marginBottom: 2 }}>{s.department}</div>
+                        <div className="ad-muted" style={{ fontSize: 12 }}>{s.year}</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ padding: '3px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700, background: risk.bg, color: risk.color, display: 'block', marginBottom: 6 }}>{risk.label}</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: s.attendance < 75 ? '#e74c3c' : '#27ae60' }}>Attendance: {s.attendance}%</span>
+                      </div>
+                    </div>
+
+                    {/* Zone 2 — Chips + Mentor */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginBottom: 14 }}>
+                      {s.arrears.map(sub => (
+                        <span key={sub} style={{ background: 'rgba(231,76,60,0.1)', border: '1px solid rgba(231,76,60,0.3)', color: '#e74c3c', fontSize: 12, fontWeight: 600, borderRadius: 999, padding: '2px 10px' }}>{sub}</span>
+                      ))}
+                      <span className="ad-muted" style={{ fontSize: 12, marginLeft: 6 }}>Mentor: {s.mentor}</span>
+                    </div>
+
+                    {/* Zone 3 — Actions */}
+                    {s.status === 'resolved' ? (
+                      <div style={{ color: '#27ae60', fontSize: 13, fontWeight: 600 }}>✅ Resolved on {s.resolvedOn}</div>
+                    ) : (
+                      <>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button onClick={() => resolveArrear(s.id)} style={{ background: 'rgba(39,174,96,0.15)', color: '#27ae60', border: '1px solid #27ae60', borderRadius: 6, padding: '4px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>✅ Resolved</button>
+                          <button onClick={() => setExpandedActId(expandedActId === s.id ? null : s.id)} style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316', border: '1px solid #f97316', borderRadius: 6, padding: '4px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>⚡ Act</button>
+                        </div>
+
+                        {expandedActId === s.id && (
+                          <div style={{ background: 'rgba(249,115,22,0.06)', border: '1px solid rgba(249,115,22,0.2)', borderRadius: 8, padding: 14, marginTop: 12 }}>
+                            <div style={{ color: '#f97316', fontSize: 13, fontWeight: 700, marginBottom: 10 }}>⚡ Action Panel — {s.name}</div>
+                            <select value={actionTypes[s.id] || 'Warning Letter'} onChange={e => setActionTypes(prev => ({ ...prev, [s.id]: e.target.value }))} style={inputStyle}>
+                              <option>Warning Letter</option>
+                              <option>Counseling Session</option>
+                              <option>Parent Meeting</option>
+                              <option>Extra Classes</option>
+                              <option>Exam Restriction</option>
+                            </select>
+                            <textarea
+                              value={actionNotes[s.id] || ''}
+                              onChange={e => setActionNotes(prev => ({ ...prev, [s.id]: e.target.value }))}
+                              placeholder={`Type action taken for ${s.name}...`}
+                              style={{ ...inputStyle, marginTop: 8, minHeight: 70, resize: 'vertical' }}
+                            />
+                            <button onClick={() => {
+                              const text = 'Action recorded: ' + (actionTypes[s.id] || 'Warning Letter');
+                              setToastMessages(prev => ({ ...prev, [s.id]: text }));
+                              setExpandedActId(null);
+                              setTimeout(() => setToastMessages(prev => ({ ...prev, [s.id]: null })), 3000);
+                            }} style={{ background: '#2980b9', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 18px', fontSize: 13, cursor: 'pointer', marginTop: 10, fontWeight: 600 }}>
+                              Send Action
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* Card toast */}
+                    {toastMessages[s.id] && (
+                      <div style={{ background: 'rgba(39,174,96,0.1)', border: '1px solid rgba(39,174,96,0.3)', borderRadius: 6, padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#27ae60', marginTop: 8 }}>
+                        ✅ {toastMessages[s.id]}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {filteredArrear.length === 0 && (
+                <div className="ad-panel"><p className="ad-empty">No students in this category.</p></div>
+              )}
+            </div>
           </div>
         )}
 
