@@ -834,68 +834,92 @@ export default function StudentDashboard() {
             </div>
           </div>
 
-          {/* HALL TICKETS */}
-          <div className="card">
-            <div className="card-header">
-              <h2 className="card-title">Hall Tickets</h2>
-              <span className="card-badge">{hallTickets.length} tickets</span>
-            </div>
-            {hallTickets.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No hall tickets issued yet.</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {hallTickets.map((h) => (
-                  <div key={h.id} style={{ background: 'var(--card-bg-2)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                      <div>
-                        <div style={{ color: 'var(--text)', fontWeight: 700, fontSize: 14 }}>{h.exams?.title || 'Exam'}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 2 }}>{h.exams?.subjects?.name}</div>
-                      </div>
-                      <span style={{
-                        background: h.issued ? 'rgba(39,174,96,0.15)' : 'rgba(241,196,15,0.15)',
-                        color: h.issued ? '#27ae60' : '#f1c40f',
-                        borderRadius: 999, padding: '2px 10px', fontSize: 11, fontWeight: 600
-                      }}>
-                        {h.issued ? 'Issued' : 'Pending'}
-                      </span>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                      <div style={{ background: 'var(--bg)', borderRadius: 6, padding: '6px 10px' }}>
-                        <div style={{ color: 'var(--text-muted)', fontSize: 10, marginBottom: 2 }}>DATE</div>
-                        <div style={{ color: 'var(--text)', fontSize: 12, fontWeight: 600 }}>
-                          {h.exams?.exam_date
-                            ? new Date(h.exams.exam_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                            : '—'}
-                        </div>
-                      </div>
-                      <div style={{ background: 'var(--bg)', borderRadius: 6, padding: '6px 10px' }}>
-                        <div style={{ color: 'var(--text-muted)', fontSize: 10, marginBottom: 2 }}>TIME</div>
-                        <div style={{ color: 'var(--text)', fontSize: 12, fontWeight: 600 }}>
-                          {h.exams?.start_time?.slice(0, 5) || '—'} – {h.exams?.end_time?.slice(0, 5) || '—'}
-                        </div>
-                      </div>
-                      <div style={{ background: 'var(--bg)', borderRadius: 6, padding: '6px 10px' }}>
-                        <div style={{ color: 'var(--text-muted)', fontSize: 10, marginBottom: 2 }}>HALL</div>
-                        <div style={{ color: 'var(--text)', fontSize: 12, fontWeight: 600 }}>
-                          {h.hall_number || h.exams?.hall || '—'}
-                        </div>
-                      </div>
-                      <div style={{ background: 'rgba(232,64,64,0.1)', border: '1px solid #e84040', borderRadius: 6, padding: '6px 10px' }}>
-                        <div style={{ color: 'var(--text-muted)', fontSize: 10, marginBottom: 2 }}>SEAT</div>
-                        <div style={{ color: '#e84040', fontSize: 14, fontWeight: 700 }}>{h.seat_number || '—'}</div>
-                      </div>
-                    </div>
-                    <div style={{ marginTop: 8 }}>
-                      <span style={{ background: 'rgba(232,64,64,0.1)', color: '#e84040', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 600 }}>
-                        {h.exams?.exam_type}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+ {/* HALL TICKETS */}
+          {(() => {
+            const EXAM_SCHEDULE = [
+              { subject: 'Computer Networks',  date: '2026-03-20' },
+              { subject: 'Web Technologies',   date: '2026-03-23' },
+              { subject: 'Data Structures',    date: '2026-03-26' },
+              { subject: 'Operating Systems',  date: '2026-03-29' },
+              { subject: 'Database Management',date: '2026-04-01' },
+            ];
+            const today = new Date();
+            today.setHours(0,0,0,0);
 
+            const withCountdown = EXAM_SCHEDULE.map((e, i) => {
+              const examDate = new Date(e.date);
+              const diff = Math.ceil((examDate - today) / 86400000);
+              return { ...e, diff, examDate, isFirst: i === 0 };
+            }).sort((a, b) => a.diff - b.diff);
+
+            const urgencyColor = (diff) => {
+              if (diff <= 3) return '#e74c3c';
+              if (diff <= 7) return '#e67e22';
+              return '#27ae60';
+            };
+
+            return (
+              <div className="card">
+                <div className="card-header">
+                  <h2 className="card-title">Hall Tickets</h2>
+                  <span className="card-badge">Final Exams · 09:00–12:00</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {withCountdown.map((exam, i) => {
+                    const color = urgencyColor(exam.diff);
+                    const isNext = i === 0;
+                    return (
+                      <div key={i} style={{
+                        background: 'var(--card-bg-2)',
+                        border: `1px solid ${isNext ? color : 'var(--border)'}`,
+                        borderLeft: `4px solid ${color}`,
+                        borderRadius: 10,
+                        padding: '12px 14px',
+                        position: 'relative'
+                      }}>
+                        {isNext && (
+                          <div style={{
+                            position: 'absolute', top: 10, right: 10,
+                            background: color, color: '#fff',
+                            fontSize: 10, fontWeight: 700,
+                            borderRadius: 4, padding: '2px 8px'
+                          }}>
+                            STUDY THIS FIRST
+                          </div>
+                        )}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                          <div>
+                            <div style={{ color: 'var(--text)', fontWeight: 700, fontSize: 14 }}>{exam.subject}</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 2 }}>Final Examination</div>
+                          </div>
+                          <div style={{
+                            background: `${color}22`, color: color,
+                            borderRadius: 8, padding: '4px 10px',
+                            fontSize: 13, fontWeight: 700,
+                            minWidth: 70, textAlign: 'center'
+                          }}>
+                            {exam.diff > 0 ? `${exam.diff}d left` : exam.diff === 0 ? 'Today!' : 'Done'}
+                          </div>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                          <div style={{ background: 'var(--bg)', borderRadius: 6, padding: '6px 10px' }}>
+                            <div style={{ color: 'var(--text-muted)', fontSize: 10, marginBottom: 2 }}>DATE</div>
+                            <div style={{ color: 'var(--text)', fontSize: 12, fontWeight: 600 }}>
+                              {exam.examDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </div>
+                          </div>
+                          <div style={{ background: 'var(--bg)', borderRadius: 6, padding: '6px 10px' }}>
+                            <div style={{ color: 'var(--text-muted)', fontSize: 10, marginBottom: 2 }}>TIME</div>
+                            <div style={{ color: 'var(--text)', fontSize: 12, fontWeight: 600 }}>09:00 – 12:00</div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
           {/* ATTENDANCE HEATMAP + ABSENT DETAILS */}
           <div className="card">
             <div className="card-header">
