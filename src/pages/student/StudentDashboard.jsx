@@ -877,20 +877,21 @@ export default function StudentDashboard() {
                         padding: '12px 14px',
                         position: 'relative'
                       }}>
-                        {isNext && (
-                          <div style={{
-                            position: 'absolute', top: 10, right: 10,
-                            background: color, color: '#fff',
-                            fontSize: 10, fontWeight: 700,
-                            borderRadius: 4, padding: '2px 8px'
-                          }}>
-                            STUDY THIS FIRST
-                          </div>
-                        )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                           <div>
                             <div style={{ color: 'var(--text)', fontWeight: 700, fontSize: 14 }}>{exam.subject}</div>
-                            <div style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 2 }}>Final Examination</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                              <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>Final Examination</div>
+                              {isNext && (
+                                <div style={{
+                                  background: color, color: '#fff',
+                                  fontSize: 10, fontWeight: 700,
+                                  borderRadius: 4, padding: '2px 8px'
+                                }}>
+                                  STUDY THIS FIRST
+                                </div>
+                              )}
+                            </div>
                           </div>
                           <div style={{
                             background: `${color}22`, color: color,
