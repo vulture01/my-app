@@ -206,11 +206,11 @@ function AIChatBuddy({ studentName, department, year, attendance = [], marks = [
 Student context:
 - Attendance: ${attendance.map(a => `${a.subject} ${a.percentage}%`).join(', ') || 'No data'}
 - Low attendance subjects (below 75%): ${attendance.filter(a => a.percentage < 75).map(a => a.subject).join(', ') || 'None'}
-- Marks: ${marks.map(m => `${m.subject} ${m.exam_type} ${m.score}/${m.max_score}`).join(', ') || 'No data'}
+- Marks: ${marks.map(m => `${m.subject} ${m.exam_type} ${m.score}/${m.max_score} (${Math.round((m.score/m.max_score)*100)}%)`).join(', ') || 'No data'}
 - Arrears: ${arrears.length > 0 ? arrears.map(a => a.subjects?.name).join(', ') : 'None'}
 - Upcoming exams: ${hallTickets.length > 0 ? hallTickets.map(h => `${h.exams?.title} on ${h.exams?.exam_date}`).join(', ') : 'None'}
 
-Use this context to give personalized advice. If asked about detention risk, check attendance below 60%.` },
+Use this context to give personalized advice. If asked about detention risk, check attendance below 60%. IMPORTANT: When comparing marks or finding lowest/highest scores, always compare by PERCENTAGE not raw score. For example 32/50 (64%) is lower than 37/50 (74%). IMPORTANT: When comparing marks or finding lowest/highest scores, always compare by PERCENTAGE not raw score. For example 32/50 (64%) is lower than 37/50 (74%). IMPORTANT: When comparing marks or finding lowest/highest scores, always compare by PERCENTAGE not raw score. For example 32/50 (64%) is lower than 37/50 (74%). IMPORTANT: When comparing marks or finding lowest/highest scores, always compare by PERCENTAGE not raw score. For example 32/50 (64%) is lower than 37/50 (74%). IMPORTANT: When comparing marks or finding lowest/highest scores, always compare by PERCENTAGE not raw score. For example 32/50 (64%) is lower than 37/50 (74%). IMPORTANT: When comparing marks or finding lowest/highest scores, always compare by PERCENTAGE not raw score. For example 32/50 (64%) is lower than 37/50 (74%). IMPORTANT: When comparing marks or finding lowest/highest scores, always compare by PERCENTAGE not raw score. For example 32/50 (64%) is lower than 37/50 (74%).` },
             ...messages,
             userMsg
           ],
